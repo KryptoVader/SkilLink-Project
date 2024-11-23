@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkilLink - Connect & Collaborate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: #f0f2f5;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #2f3136;
+            padding: 20px;
+            color: white;
+            position: fixed;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #7289da;
+        }
+
+        .nav-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: #393c43;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin-right: auto;
+        }
+
+        /* Post Creation */
+        .create-post {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .post-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-button {
+            background-color: #7289da;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Feed Posts */
+        .post {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+
+        .post-info {
+            flex: 1;
+        }
+
+        .post-author {
+            font-weight: bold;
+        }
+
+        .post-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .post-content {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .post-actions-bottom {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .action {
+            cursor: pointer;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            width: 300px;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            background-color: white;
+            padding: 20px;
+            border-left: 1px solid #ddd;
+        }
+
+        .contacts-header {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .contact {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .contact:hover {
+            background-color: #f0f2f5;
+        }
+
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #43b581;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div class="logo">SkilLink</div>
+        <div class="nav-item">🏠 Home</div>
+        <div class="nav-item">👥 My Network</div>
+        <div class="nav-item">💼 Projects</div>
+        <div class="nav-item">💬 Messages</div>
+        <div class="nav-item">🔍 Research</div>
+        <div class="nav-item">🏫 Academic Hub</div>
+        <div class="nav-item">⚡ Quick Connect</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Create Post Section -->
+        <div class="create-post">
+            <textarea class="post-input" placeholder="Share an update about your project or research..."></textarea>
+            <div class="post-actions">
+                <div>
+                    📎 Attach | 📷 Image | 📊 File
+                </div>
+                <button class="post-button">Post</button>
+            </div>
+        </div>
+
+        <!-- Feed Posts -->
+        <div class="post">
+            <div class="post-header">
+                <div class="profile-pic"></div>
+                <div class="post-info">
+                    <div class="post-author">Sarah Chen</div>
+                    <div class="post-time">2 hours ago</div>
+                </div>
+            </div>
+            <div class="post-content">
+                Excited to announce our research paper on AI Ethics has been accepted at the International Conference on AI & Ethics 2024! Looking for students interested in contributing to the next phase of this project. #AIEthics #Research #Collaboration
+            </div>
+            <div class="post-actions-bottom">
+                <span class="action">👍 Like</span>
+                <span class="action">💬 Comment</span>
+                <span class="action">↗ Share</span>
+            </div>
+        </div>
+
+        <div class="post">
+            <div class="post-header">
+                <div class="profile-pic"></div>
+                <div class="post-info">
+                    <div class="post-author">Prof. James Wilson</div>
+                    <div class="post-time">5 hours ago</div>
+                </div>
+            </div>
+            <div class="post-content">
+                Seeking undergraduate students for our new robotics research project. Great opportunity for hands-on experience with cutting-edge technology. DM if interested! #Robotics #Research #StudentOpportunity
+            </div>
+            <div class="post-actions-bottom">
+                <span class="action">👍 Like</span>
+                <span class="action">💬 Comment</span>
+                <span class="action">↗ Share</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="right-sidebar">
+        <div class="contacts-header">Contacts & Quick Connect</div>
+        <div class="contact">
+            <div class="profile-pic"></div>
+            <div style="margin-left: 10px;">Dr. Emily Parker</div>
+            <div class="online-indicator"></div>
+        </div>
+        <div class="contact">
+            <div class="profile-pic"></div>
+            <div style="margin-left: 10px;">Alex Thompson</div>
+            <div class="online-indicator"></div>
+        </div>
+        <div class="contact">
+            <div class="profile-pic"></div>
+            <div style="margin-left: 10px;">Maria Rodriguez</div>
+            <div class="online-indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        // Add post functionality
+        document.querySelector('.post-button').addEventListener('click', function() {
+            const postContent = document.querySelector('.post-input').value;
+            if (postContent.trim() !== '') {
+                const newPost = document.createElement('div');
+                newPost.className = 'post';
+                newPost.innerHTML = `
+                    <div class="post-header">
+                        <div class="profile-pic"></div>
+                        <div class="post-info">
+                            <div class="post-author">You</div>
+                            <div class="post-time">Just now</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${postContent}</div>
+                    <div class="post-actions-bottom">
+                        <span class="action">👍 Like</span>
+                        <span class="action">💬 Comment</span>
+                        <span class="action">↗ Share</span>
+                    </div>
+                `;
+                
+                const firstPost = document.querySelector('.post');
+                firstPost.parentNode.insertBefore(newPost, firstPost);
+                document.querySelector('.post-input').value = '';
+            }
+        });
+
+        // Like functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('action') && e.target.textContent.includes('Like')) {
+                e.target.style.color = '#7289da';
+            }
+        });
+    </script>
+</body>
+</html>

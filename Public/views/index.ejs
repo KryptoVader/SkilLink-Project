@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkilLink - Connect, Collaborate, Create</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-content">
+            <div class="logo">SkilLink</div>
+            <div class="nav-links">
+                <a href="/" id="home-link" title="Home">Home</a>
+                <a href="/login" id="mentor-link" title="Mentors">Mentors</a>
+                <a href="/login" id="projects-link" title="Project">Projects</a>
+                <a href="/login" id="profile-link" title="Profile">Profile</a>
+                <a href="/login" id="login-btn" title="Login">Login</a>
+            </div>
+        </div>
+        
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1>Connect. Collaborate. Create.</h1>
+            <p>Join the academic community where students and professors come together to build amazing projects.</p>
+            <a href="/login" class="btn btn-primary" id="get-started-btn">Get Started</a>
+        </div>
+    </div>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose SkilLink?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Find Your Team</h3>
+                    <p>Connect with peers who share your interests and complement your skills.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Expert Guidance</h3>
+                    <p>Get mentored by experienced professors in your field of interest.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Project Management</h3>
+                    <p>Powerful tools to organize your research and track project progress.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="projects">
+        <div class="container">
+            <h2>Active Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>AI Research Initiative</h3>
+                    <div class="tags">
+                        <span class="tag">Machine Learning</span>
+                        <span class="tag">Python</span>
+                    </div>
+                    <p>Exploring applications of deep learning in healthcare diagnostics.</p>
+                    <a href="#" class="btn btn-primary">Learn More</a>
+                </div>
+                <div class="project-card">
+                    <h3>Sustainable Energy</h3>
+                    <div class="tags">
+                        <span class="tag">Engineering</span>
+                        <span class="tag">Environmental</span>
+                    </div>
+                    <p>Developing innovative solutions for renewable energy storage.</p>
+                    <a href="#" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 SkilLink. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function () {
+            $('.project-card').hover(
+                function () {
+                    $(this).css('transform', 'translateY(-5px)');
+                    $(this).css('transition', 'transform 0.3s');
+                },
+                function () {
+                    $(this).css('transform', 'translateY(0)');
+                }
+            );
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,536 @@
+<article class="guide">
+  <carousel class="deck container-fluid">
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Movie Graph</h3>
+        <p class="lead">Pop-cultural connections between actors and movies</p>
+      </div>
+      <div class="col-sm-9">
+        <p><em>The Movie Graph</em>&nbsp; contains actors and directors that are related through the movies
+          they've collaborated on.
+        </p>
+        <p>This guide will show you how to:</p>
+        <ol class="big">
+          <li>Match: find individual movies and actors</li>
+          <li>Create: insert movie data into the graph</li>
+          <li>Delete: remove unwanted or incorrect data</li>
+          <li>Query: discover related actors and directors</li>
+          <li>Solve: the Bacon Path</li>
+          <li>Recommend: new connections</li>
+        </ol>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Finding graph data</h5><br>
+        <h3>MATCH</h3>
+        <p>
+          We'll use the <code style="word-break:normal">cypher</code> graph query language to find data.
+          A <code style="word-break:normal">MATCH</code> statement looks for graph patterns.
+        </p>
+        <p>Do this:</p>
+        <ol>
+          <li>Fill in the form above the query</li>
+          <li>Click on the code block</li>
+          <li>Notice it gets copied to the editor above &uarr;</li>
+          <li>Click the editor's play button to run the query</li>
+          <li>Wait for the query to finish</li>
+        </ol>
+        <hr>
+        <p>
+          <a help-topic="cypher">:help cypher</a>&nbsp;
+          <a help-topic="match">:help MATCH</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="field">
+                <label>Find a person named</label>
+                  <input value-for="person-name" type="text" id="person-name" value="Tom Hanks">
+                </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Tom Hanks</span>'}) RETURN a</pre>
+          </div>
+        </div>
+        <p>This query matches the smallest possible pattern, a single record called a "node". The pattern
+          specifies nodes with a label called <code style="word-break:normal">Person</code> and a <code style="word-break:normal">name</code> property with
+          a value provided by the form above. Try looking for "Keanu Reeves" or "Charlize Theron".
+        </p>
+        <p>The result frame shows a graph visualization of the node. The graph view is only available when
+          the result of a query contains graph elements. If your query only has value elements (for example,
+          just the actor names instead of the entire actor) then you'll only see the tabular view.
+        </p>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Add nodes for persons &amp; movies</h5><br>
+        <h3>CREATE</h3>
+        <p>
+          Creating data also uses patterns. Here are two patterns for creating Persons and Movies. Simple, right?
+        </p>
+        <p>Do this:</p>
+        <ol>
+          <li>Add some people and movies to the graph</li>
+          <li>Notice what happens when you create the same thing twice</li>
+        </ol>
+        <hr>
+        <p>
+          <a help-topic="create">:help CREATE</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Create a person named</label>
+              <input value-for="person-name" type="text" id="person-name" value="Brie Larson">
+              </div>
+              <div class="two wide field">
+                <label>Birth</label>
+                <input value-for="person-birth"  type="text" id="person-birth" value="1989">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">CREATE (a:Person {name:'<span value-key="person-name">Brie Larson</span>', born:<span value-key="person-birth">1989</span>}) RETURN a</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Create a movie titled</label>
+              <input value-for="movie-title" type="text" id="movie-title" value="Captain Marvel">
+              </div>
+              <div class="two wide field">
+                <label>Released</label>
+                <input value-for="movie-released"  type="text" id="movie-released" value="2019">
+              </div>
+              <div class="eight wide field">
+                <label>Tagline</label>
+                <input value-for="movie-tagline"  type="text" id="movie-tagline" value="Everything begins with a (her)o.">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">CREATE (a:Movie {title:'<span value-key="movie-title">Captain Marvel</span>', released:<span value-key="movie-released">2019</span>,
+tagline:'<span value-key="movie-tagline">Everything begins with a (her)o.</span>'}) RETURN a</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Remove nodes</h5><br>
+        <h3>DELETE</h3>
+        <p>
+          To remove some of the duplicates that may have been created, use a <code style="word-break:normal">DELETE</code> clause after matching
+          the unwanted nodes.
+        </p>
+        <p>Do this:</p>
+        <ol>
+          <li>Delete any persons or movies that you've created too many times</li>
+          <li>Notice this query will delete nodes <i>and</i> relationships</li>
+          <li>What's a relationship? We'll get there soon..</li>
+        </ol>
+        <hr>
+        <p>
+          <a help-topic="delete">:help DELETE</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Delete all persons named</label>
+              <input value-for="person-name" type="text" id="person-name" value="Brie Larson">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Brie Larson</span>'}) DETACH DELETE a</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Delete all movies named</label>
+              <input value-for="movie-title" type="text" id="movie-title" value="Captain Marvel">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Movie {title:'<span value-key="movie-title">Captain Marvel</span>'}) DETACH DELETE a</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Create or update nodes</h5><br>
+        <h3>MERGE</h3>
+        <p>
+          To avoid duplicates you can use a <code style="word-break:normal">MERGE</code> statement. This acts like a combination of
+          matching then creating or updating.
+        </p>
+        <p>Do this:</p>
+        <ol>
+          <li>Add the same person multiple times</li>
+          <li>Notice how the stars property increments</li>
+          <li>But the birth year is only set once</li>
+        </ol>
+        <hr>
+        <p>
+          <a help-topic="merge">:help MERGE</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Update a person named</label>
+              <input value-for="person-name" type="text" id="person-name" value="Brie Larson">
+              </div>
+              <div class="two wide field">
+                <label>Birth</label>
+                <input value-for="person-birth"  type="text" id="person-birth" value="1989">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MERGE (a:Person {name:'<span value-key="person-name">Brie Larson</span>'})
+ON CREATE SET a.born = <span value-key="person-birth">1989</span>
+ON MATCH SET a.stars = COALESCE(a.stars, 0) + 1
+RETURN a</pre>
+          </div>
+        </div>
+        <p>Generally, a <code style="word-break:normal">MERGE</code> pattern should be as minimal yet specific as possible.</p>
+        <p>A merge statement has two sub-statement clauses: <code style="word-break:normal">ON CREATE</code> and <code style="word-break:normal">ON MATCH</code> .
+          Use the <code style="word-break:normal">ON CREATE</code> branch to set values for newly created nodes.
+          Use the <code style="word-break:normal">ON MATCH</code> branch to update values for existing nodes.
+        </p>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Create or update relationships</h5><br>
+        <h3>MERGE together</h3>
+        <p>The magic of graphs happens when you create explicit connections between records. We call those relationships.</p>
+        <p>Do this:</p>
+        <ol>
+          <li>Match a person and a movie</li>
+          <li>Indicate the role that person portrayed in the movie</li>
+        </ol>
+        <hr>
+        <p>
+          <a help-topic="merge">:help MERGE</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Person named</label>
+                <input value-for="person-name" type="text" id="person-name" value="Brie Larson">
+              </div>
+              <div class="four wide field">
+                <label>acted as</label>
+                <input value-for="actor-role" type="text" id="actor-role" value="Carol Danvers">
+              </div>
+              <div class="six wide field">
+                <label>in movie titled</label>
+                <input value-for="movie-title" type="text" id="movie-title" value="Captain Marvel">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Brie Larson</span>'}), (b:Movie {title:'<span value-key="movie-title">Captain Marvel</span>'})
+MERGE (a)-[r:ACTED_IN]->(b) SET r.roles = ['<span value-key="actor-role">Carol Danvers</span>']
+RETURN a,r,b</pre>
+          </div>
+        </div>
+        <p>The movie graph uses a single <code style="word-break:normal">ACTED_IN</code> relationship between a person and a movie.
+          Using <code style="word-break:normal">MERGE</code> ensures only one relationship will be created of that type.
+          There's a challenge here: how do you add multiple roles?
+        </p>
+        <p>This query will only succeed if both the actor and movie already exist. Otherwise, nothing happens and you'll see 'no changes, no records' reported in the result frame.</p>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Advanced topic</h5><br>
+        <h3>List comprehensions</h3>
+        <p>Cypher supports some advanced language features, such as a "list comprehensions" which can be used
+          for creating lists from existing lists.
+        </p>
+        <p>To learn more about advanced Cypher topics, consult the <a target="_blank" href="https://neo4j.com/docs/cypher-manual/">Cypher Manual</a>.</p>
+        <hr>
+        <p>
+          <a help-topic="cypher">:help cypher</a>
+        </p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Person named</label>
+                <input value-for="person-name" type="text" id="person-name" value="Brie Larson">
+              </div>
+              <div class="four wide field">
+                <label>acted as</label>
+                <input value-for="actor-role" type="text" id="actor-role" value="Captain Marvel">
+              </div>
+              <div class="six wide field">
+                <label>in movie titled</label>
+                <input value-for="movie-title" type="text" id="movie-title" value="Captain Marvel">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Brie Larson</span>'}), (b:Movie {title:'<span value-key="movie-title">Captain Marvel</span>'})
+MERGE (a)-[r:ACTED_IN]->(b)
+SET r.roles = [x in r.roles WHERE x &lt;&gt; '<span value-key="actor-role">Captain Marvel</span>'] + ['<span value-key="actor-role">Captain Marvel</span>']
+RETURN a,r,b</pre>
+          </div>
+        </div>
+        <p>In this advanced merge a list comprehension is used to first filter the current roles to remove the proposed new role,
+          and then concatenate that filtered list with a list containing just the new role.
+        </p>
+      </div>
+    </slide>
+
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Complex search criteria</h5><br>
+        <h3>WHERE</h3>
+        <p>We've been looking for exact matches. Add a <code style="word-break:normal">WHERE</code>
+        clause for more complex search criteria.</p>
+        <p>Predicates include:</p>
+        <ol>
+          <li>booleans like AND, OR and NOT</li>
+          <li>ranges using &gt; or &lt;</li>
+          <li>partial string matches</li>
+        </ol>
+        <hr>
+        <p><a help-topic="match">:help MATCH</a>&nbsp;<a help-topic="where">:help WHERE</a></p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Persons with names that start with</label>
+              <input value-for="person-name" type="text" id="person-name" value="Tom">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person) WHERE a.name STARTS WITH '<span value-key="person-name">Tom</span>' RETURN a</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="fields">
+              <div class="six wide field">
+                <label>Movies released after</label>
+                <input value-for="movie-after" type="text" id="movie-after" value="1990">
+              </div>
+              <div class="six wide field">
+                <label>but before</label>
+                <input value-for="movie-before" type="text" id="movie-title" value="2000">
+              </div>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Movie) WHERE a.released &gt; <span value-key="movie-after">1990</span> AND a.released &lt; <span value-key="movie-before">2000</span> RETURN a</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>Graph queries with patterns</h5><br>
+        <h3>MATCH more</h3>
+        <p>Think about a query as a sentence pattern from noun to verb to noun. That's the essense of graph thinking.
+        </p>
+        <p>Some patterns in the movie graph:</p>
+        <ol>
+          <li>Actors are people who acted in movies</li>
+          <li>Directors are people who directed a movie</li>
+        </ol>
+        <hr>
+        <p><a help-topic="match">:help MATCH</a></p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>List movies with actor</label>
+              <input value-for="person-name" type="text" id="person-name" value="Tom Hanks">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Tom Hanks</span>'})-[:ACTED_IN]-&gt;(m:Movie) RETURN a,m</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>Who directed the movie</label>
+              <input value-for="movie-title" type="text" id="movie-title" value="Cloud Atlas">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (m:Movie {title:'<span value-key="movie-title">Cloud Atlas</span>'})&lt;-[:DIRECTED]-(d:Person) RETURN d</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>From patterns to values</h5><br>
+        <h3>Valuable results</h3>
+        <p>Pattern-based queries can yield value-based results rather than graph element results.
+          Graph elements are helpful for seeing structures and shapes. Value results are helpful
+          for understanding the details.
+        </p>
+        <hr>
+        <p><a help-topic="match">:help MATCH</a></p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>Co-actors of actor</label>
+              <input value-for="person-name" type="text" id="person-name" value="Tom Hanks">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Tom Hanks</span>'})-[:ACTED_IN]-&gt;(m)&lt;-[:ACTED_IN]-(c) RETURN c.name</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>How people are related to movie</label>
+              <input value-for="movie-title" type="text" id="movie-title" value="Cloud Atlas">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (people:Person)-[relatedTo]-(:Movie {title:'<span value-key="movie-title">Cloud Atlas</span>'})
+RETURN people.name, type(relatedTo), relatedTo</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>The Bacon Path</h5><br>
+        <h3>Solve</h3>
+        <p>
+          You've heard of the classic "Six Degrees of Kevin Bacon"?
+          That is simply a shortest path query called the "Bacon Path".
+        </p>
+        <ol>
+          <li>Variable length patterns</li>
+          <li>Built-in shortestPath() algorithm</li>
+        </ol>
+        <hr>
+        <p><a help-topic="match">:help MATCH</a></p>
+      </div>
+      <div class="col-sm-9 ui basic segment">
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>Movies and actors up to 4 "hops" away from Kevin Bacon</label>
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (bacon:Person {name:&quot;Kevin Bacon&quot;})-[*1..4]-(hollywood)
+RETURN DISTINCT hollywood</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>The shortest path following any relationship from Kevin Bacon to</label>
+              <input value-for="person-name" type="text" id="person-name" value="Al Pacino">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH p=shortestPath(
+              (bacon:Person {name:&quot;Kevin Bacon&quot;})-[*]-(a:Person {name:'<span value-key="person-name">Al Pacino</span>'})
+            )
+RETURN p</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-3">
+        <h5>The Movie Graph</h5><br>
+        <h3>Recommend</h3>
+        <p>
+          Let's recommend new co-actors for Tom Hanks. A basic recommendation
+          approach is to find connections past an immediate neighborhood
+          which are themselves well connected.
+        </p>
+        <p>For Tom Hanks, that means:</p>
+        <ol>
+          <li>Find actors that Tom Hanks hasn't yet worked with, but his co-actors have.</li>
+          <li>Find someone who can introduce Tom to his potential co-actor.</li>
+        </ol>
+      </div>
+      <div class="col-sm-9 basic segment">
+
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>Extend co-actors, to find co-co-actors who haven't worked with</label>
+              <input value-for="person-name" type="text" id="person-name" value="Tom Hanks">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Tom Hanks</span>'})-[:ACTED_IN]-&gt;(m)&lt;-[:ACTED_IN]-(coActors),
+      (coActors)-[:ACTED_IN]-&gt;(m2)&lt;-[:ACTED_IN]-(cocoActors)
+WHERE NOT (a)-[:ACTED_IN]-&gt;()&lt;-[:ACTED_IN]-(cocoActors) AND a &lt;&gt; cocoActors
+RETURN cocoActors.name AS Recommended, count(*) AS Strength ORDER BY Strength DESC</pre>
+          </div>
+        </div>
+        <div class="ui card fluid">
+          <div class="ui form content">
+            <div class="inline field">
+              <label>Find someone to introduce </label>
+              <input value-for="person-name" type="text" id="person-name" value="Tom Hanks">
+              <label> to </label>
+              <input value-for="other-person" type="text" id="other-person" value="Tom Cruise">
+            </div>
+            <pre class="pre-scrollable code runnable">MATCH (a:Person {name:'<span value-key="person-name">Tom Hanks</span>'})-[:ACTED_IN]-&gt;(m)&lt;-[:ACTED_IN]-(coActors),
+(coActors)-[:ACTED_IN]-&gt;(m2)&lt;-[:ACTED_IN]-(other:Person {name:'<span value-key="other person">Tom Cruise</span>'})
+RETURN a, m, coActors, m2, other</pre>
+          </div>
+        </div>
+      </div>
+    </slide>
+    <slide class="row-fluid">
+      <div class="col-sm-6">
+        <h3>DBMS, Database, Graph</h3>
+        <p>This movie graph is contained in a database that is hosted by a Neo4j DBMS.</p>
+        <p>Terminology:</p>
+        <ol>
+          <li>Graph: data strucured as nodes and relationships</li>
+          <li>Database: an administrative container for graph data</li>
+          <li>DBMS: the operational system for managing databases</li>
+        </ol>
+      </div>
+      <div class="col-sm-6">
+        <h3>Security</h3>
+        <p>Neo4j DBMS has a default user named 'neo4j'. We've been acting as that authenticated user.</p>
+        <p>Some notes about authentication:</p>
+        <ol>
+          <li>Desktop remembers user credentials for you</li>
+          <li>This sample database was initialized with a random password for the 'neo4j' user</li>
+          <li>The 'neo4j' user password can be reset using the "Manage" panel in the context-menu in the project window </li>
+        </ol>
+      </div>
+    </slide>
+    <slide class="row-fluid header">
+      <div class="col-sm-4">
+        <h3>Next steps</h3>
+      </div>
+      <div class="col-sm-4">
+        <h3>More code</h3>
+        <ul class="undecorated">
+          <li><a play-topic="northwind-graph">Northwind Graph</a> - from RDBMS to graph</li>
+          <li><a play-topic="cypher">Cypher</a> - graph query language fundamentals</li>
+        </ul>
+      </div>
+      <div class="col-sm-4">
+        <h3>Reference</h3>
+        <ul class="undecorated">
+          <li><a target="_blank" href="https://neo4j.com/developer/">Developer resources</a></li>
+          <li><a target="_blank" href="https://neo4j.com/docs/developer-manual/">Neo4j Developer Manual</a></li>
+          <li><a target="_blank" href="https://neo4j.com/docs/cypher-manual/">Cypher Manual</a></li>
+        </ul>
+      </div>
+    </slide>
+  </carousel>
+</article>
