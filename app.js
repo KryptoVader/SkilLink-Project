@@ -10,7 +10,6 @@ import neo4j from 'neo4j-driver';
 import passport from "passport";
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
-
 dotenv.config();
 
 const app = express()
@@ -18,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const driver = neo4j.driver(
     process.env.NEO4J_URI,
     neo4j.auth.basic(process.env.NEO4J_USERNAME,process.env.NEO4J_PASSWORD)
-)
+);
 const Session = driver.session();
 
 app.set('view engine', 'ejs');
@@ -32,7 +31,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false }
 }
-))
+));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -84,7 +83,7 @@ app.get('/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ message: 'Failed to log out' });
         }
-        res.redirect('/login');
+        res.redirect('/');
     });
 });
 
@@ -164,7 +163,7 @@ process.on("exit", async () => {
 });
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
