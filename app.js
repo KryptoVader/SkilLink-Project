@@ -40,31 +40,66 @@ const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const redirectUri = 'http://localhost:3000/auth/google/callback';
 
-passport.use(new GoogleStrategy({
-    clientID: googleClientId,
-    clientSecret: googleClientSecret,
-    callbackURL: redirectUri,
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        // Handle storing the user information in Neo4j or your database
-        const user = {
-            googleId: profile.id,
-            email: profile.emails[0].value,
-            name: profile.displayName,
-        };
-        // Save or update user in Neo4j
-        await Session.run(
-            'MERGE (u:User {user_id: $googleId}) SET u.email = $email, u.name = $name RETURN u',
-            user
-        );
-        return done(null, profile);
-    } catch (error) {
-        return done(error);
-    }
-}));
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: googleClientId,
+            clientSecret: googleClientSecret,
+            callbackURL: redirectUri,
+        },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                const user = {
+                    googleId: profile.id,
+                    email: profile.emails[0].value,
+                    name: profile.displayName,
+                };
 
-passport.serializeUser((user,done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+                const result = await Session.run(
+                    `MERGE (u:User {user_id: $googleId}) 
+                     SET u.email = $email, u.name = $name 
+                     RETURN u`,
+                    user
+                );
+
+                // Retrieve stored user data
+                const storedUser = result.records[0].get('u').properties;
+
+                // Pass the user object to Passport
+                return done(null, storedUser); // Send stored user to serializeUser
+            } catch (error) {
+                console.error('Neo4j Error:', error);
+                return done(error);
+            }
+        }
+    )
+);
+
+
+passport.serializeUser((user, done) => {
+    // Store user data in the session (typically the unique identifier)
+    done(null, user.user_id); // Use Neo4j's `user_id` for session
+});
+
+passport.deserializeUser(async (userId, done) => {
+    try {
+        // Retrieve user from Neo4j using the stored `userId`
+        const result = await Session.run(
+            `MATCH (u:User {user_id: $userId}) RETURN u`,
+            { userId }
+        );
+
+        if (result.records.length === 0) {
+            return done(new Error('User not found'), null);
+        }
+
+        const user = result.records[0].get('u').properties;
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
 
 app.get('/', (req, res) => {
     res.render('index');
@@ -72,10 +107,6 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req,res) => {
     res.render('signup', { googleClientId });
-});
-
-app.get('/dashboard', (req, res) => {
-    res.render('dashboard');
 });
 
 app.get('/logout', (req, res) => {
@@ -89,9 +120,17 @@ app.get('/logout', (req, res) => {
 
 app.get('/auth/google/signin', passport.authenticate('google', {scope: ["profile", "email"]}));
 
-app.get("/auth/google/callback", passport.authenticate('google', {failureRedirect: '/'}), (req,res) => {
-    res.redirect('/dashboard');
-});
+app.get("/auth/google/callback", 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        // Save user data to the session
+        req.session.user = req.user; // req.user comes from `deserializeUser`
+
+        // Redirect to the dashboard
+        res.redirect('/dashboard');
+    }
+);
+
 
 app.post('/user', async (req, res) => {
     const { name, password } = req.body;
@@ -154,6 +193,28 @@ app.post('/add-user', async (req, res) => {
     } catch (error) {
         console.error('Error adding user:', error);
         res.status(500).send('Error adding user: ' + error.message);
+    }
+});
+
+app.get('/dashboard', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/'); // Redirect if user is not logged in
+        }
+
+        const recommendations = [
+            { name: 'Dr. John Doe', link: '/mentors/suggestion1', description: 'AI Research' },
+            { name: 'Deep Learning Project Ideas', link: '/projects/suggestion2', description: 'Collaboration' }
+        ];
+
+        res.render('dashboard', {
+            user: req.session.user, // Pass user information
+            content: '<p>Your current projects and updates can go here.</p>',
+            recommendations
+        });
+    } catch (error) {
+        console.error('Error rendering dashboard:', error);
+        res.status(500).send('An error occurred.');
     }
 });
 

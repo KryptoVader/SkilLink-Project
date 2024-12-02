@@ -44,6 +44,7 @@ nav {
 }
 
 .nav-links a:hover {
+    color: var(--primary);
     transform: scale(1.1);
 }
 
