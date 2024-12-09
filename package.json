@@ -19,6 +19,7 @@
     "express-session": "^1.18.1",
     "mongoose": "^8.8.2",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "neo4j-driver": "^5.26.0",
     "node-fetch": "^3.3.2",
     "passport": "^0.7.0",
