@@ -11,6 +11,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import multer from 'multer';
 
 
+//Add the changes like saving the email and things to session when using /user and etc.
+
 dotenv.config();
 
 const app = express()
@@ -24,6 +26,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'Public')));
+app.use(express.json());
 app.set('views', path.join(__dirname, 'Public', 'views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -255,30 +258,162 @@ app.get('/dashboard', async (req, res) => {
     }
 });
 
-app.post('/profile/avatar', upload.single('avatar'), async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
-    const userId = req.session.user.user_id;
-    const avatarUrl = `/uploads/${req.file.filename}`;
-
+app.get('/profile', async (req, res) => {
     try {
-        await Session.run(
-            `MATCH (u:User {user_id: $userId})
-             SET u.avatarUrl = $avatarUrl`,
-            { userId, avatarUrl }
-        );
+        if (!req.session.user) return res.redirect('/');
 
-        req.session.user.avatarUrl = avatarUrl; // Update session
-        res.redirect('/dashboard');
+        const userName = req.session.user.name;
+
+        // Check if the user exists as a Student or Teacher
+        const roleCheckQuery = `
+            MATCH (u:User {name: $userName})
+            OPTIONAL MATCH (u)-[:HAS_ROLE]->(r)
+            RETURN r
+        `;
+        const result = await Session.run(roleCheckQuery, { userName });
+
+        const role = result.records[0].get('r');
+        if (!role) {
+            // If the user has no role, prompt to select
+            return res.render('select-role', { user: req.session.user });
+        }
+
+        // Fetch profile details based on role (as before)
+        const userType = role.labels[0].toLowerCase(); // Assuming labels are Student/Teacher
+        req.session.user.userType = userType;
+
+        res.render('profile', { user: req.session.user });
     } catch (error) {
-        console.error('Error uploading avatar:', error);
-        res.status(500).send('Failed to upload avatar.');
+        console.error('Error checking role:', error);
+        res.status(500).send('An error occurred.');
     }
 });
 
 
+app.post('/select-role', async (req, res) => {
+    const { role } = req.body; // Get the role from the request body
+    try {
+        // Log the role for debugging purposes
+        console.log("Role received:", role);
+        
+        // Check if the session exists and the user is logged in
+        if (!req.session.user) {
+            console.log("User not authenticated");
+            return res.status(401).send('Unauthorized');
+        }
+
+        const userName = req.session.user.name;
+        const userEmail = req.session.user.email;
+
+        let createNodeQuery;
+
+        // Check and set up role-specific queries
+        if (role === "Student") {
+            createNodeQuery = `
+                MATCH (u:User {name: $userName})
+                CREATE (s:Student {
+                    name: $userName,
+                    email: $userEmail,
+                    cgpa: 0.0,
+                    skills: [],
+                    university: "Not specified"
+                })
+                CREATE (u)-[:HAS_ROLE]->(s)
+            `;
+        } else if (role === "Teacher") {
+            createNodeQuery = `
+                MATCH (u:User {name: $userName})
+                CREATE (t:Teacher {
+                    name: $userName,
+                    email: $userEmail,
+                    institution: "Not specified",
+                    highestDegree: "Not specified",
+                    researchInterests: []
+                })
+                CREATE (u)-[:HAS_ROLE]->(t)
+            `;
+        } else {
+            console.log("Invalid role received:", role);
+            return res.status(400).send('Invalid role selected');
+        }
+
+        // Run the query in Neo4j
+        await Session.run(createNodeQuery, { userName, userEmail });
+
+        // Update the session with the user's type
+        req.session.user.userType = role.toLowerCase();
+
+        // Respond with a success message
+        res.status(200).send('Role set successfully');
+    } catch (error) {
+        console.error('Error creating role node:', error);
+        res.status(500).send('Failed to create role node');
+    }
+});
+
+app.post('/update-role', async (req, res) => {
+    const { newRole } = req.body; // Get the new role from the request body
+    try {
+        if (!req.session.user) {
+            console.log("User not authenticated");
+            return res.status(401).send('Unauthorized');
+        }
+
+        const userName = req.session.user.name;
+        const userEmail = req.session.user.email;
+
+        let roleNode;
+        let createNodeQuery;
+        
+        // Remove the existing role node if present
+        await Session.run(`
+            MATCH (u:User {name: $userName})-[r:HAS_ROLE]->(role)
+            DELETE r
+        `, { userName });
+
+        // Check and set up role-specific queries
+        if (newRole === "Student") {
+            createNodeQuery = `
+                MATCH (u:User {name: $userName})
+                CREATE (s:Student {
+                    name: $userName,
+                    email: $userEmail,
+                    cgpa: 0.0,
+                    skills: [],
+                    university: "Not specified"
+                })
+                CREATE (u)-[:HAS_ROLE]->(s)
+            `;
+        } else if (newRole === "Teacher") {
+            createNodeQuery = `
+                MATCH (u:User {name: $userName})
+                CREATE (t:Teacher {
+                    name: $userName,
+                    email: $userEmail,
+                    institution: "Not specified",
+                    highestDegree: "Not specified",
+                    researchInterests: []
+                })
+                CREATE (u)-[:HAS_ROLE]->(t)
+            `;
+        } else {
+            console.log("Invalid role received:", newRole);
+            return res.status(400).send('Invalid role selected');
+        }
+
+        // Run the query to create the new role node
+        await Session.run(createNodeQuery, { userName, userEmail });
+
+        // Update the session with the user's new type
+        req.session.user.userType = newRole.toLowerCase();
+
+        // Respond with a success message
+        res.status(200).send('Role updated successfully');
+    } catch (error) {
+        console.error('Error updating role:', error);
+        res.status(500).send('Failed to update role');
+    }
+});
 
 process.on("exit", async () => {
     await driver.close();
