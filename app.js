@@ -50,17 +50,20 @@ passport.use(
             callbackURL: redirectUri,
         },
         async (accessToken, refreshToken, profile, done) => {
+            const session = driver.session();
             try {
                 const user = {
                     googleId: profile.id,
                     email: profile.emails[0].value,
                     name: profile.displayName,
-                    avatarUrl:'/images/download.png', // Fallback to default
+                    avatarUrl: profile.photos[0]?.value || '/images/download.png', // Use Google profile photo or fallback
                 };
-
-                const result = await Session.run(
+                
+                // Save or update the user in the database
+                const result = await session.run(
                     `MERGE (u:User {user_id: $googleId}) 
                      ON CREATE SET u.email = $email, u.name = $name, u.avatarUrl = $avatarUrl
+                     ON MATCH SET u.avatarUrl = $avatarUrl
                      RETURN u`,
                     user
                 );
@@ -70,22 +73,21 @@ passport.use(
             } catch (error) {
                 console.error('Neo4j Error:', error);
                 return done(error);
+            } finally {
+                await session.close();
             }
         }
-
     )
 );
 
-
 passport.serializeUser((user, done) => {
-    // Store user data in the session (typically the unique identifier)
-    done(null, user.user_id); // Use Neo4j's `user_id` for session
+    done(null, user.user_id);
 });
 
 passport.deserializeUser(async (userId, done) => {
+    const session = driver.session();
     try {
-        // Retrieve user from Neo4j using the stored `userId`
-        const result = await Session.run(
+        const result = await session.run(
             `MATCH (u:User {user_id: $userId}) RETURN u`,
             { userId }
         );
@@ -98,9 +100,10 @@ passport.deserializeUser(async (userId, done) => {
         done(null, user);
     } catch (error) {
         done(error, null);
+    } finally {
+        await session.close();
     }
 });
-
 
 app.get('/', (req, res) => {
     res.render('index');
@@ -123,26 +126,60 @@ app.get('/auth/google/signin', passport.authenticate('google', { scope: ["profil
 
 app.get("/auth/google/callback",
     passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-        // Save user data to the session
-        req.session.user = req.user; // req.user comes from `deserializeUser`
+    async (req, res) => {
+        const session = driver.session();
+        try {
+            const userId = req.user.user_id; // From deserializeUser
+            const roleQuery = `
+                MATCH (u:User {user_id: $userId})
+                OPTIONAL MATCH (u)-[:HAS_ROLE]->(role)
+                RETURN role
+            `;
+            const result = await session.run(roleQuery, { userId });
 
-        // Redirect to the dashboard
-        res.redirect('/dashboard');
+            const role = result.records[0]?.get('role');
+
+            if (role) {
+                // If role exists, redirect to the dashboard
+                req.session.user = {
+                    ...req.user, // Existing user data
+                    role: role.labels[0].toLowerCase(), // e.g., 'student' or 'teacher'
+                };
+                return res.redirect('/dashboard');
+            }
+
+            // If no role exists, redirect to select role
+            req.session.user = req.user; // Save user info in session
+            res.redirect('/select-role'); // Redirect to role selection
+        } catch (error) {
+            console.error('Error checking user role:', error);
+            res.status(500).send('Internal Server Error');
+        } finally {
+            await session.close();
+        }
     }
 );
 
 
 app.post('/user', async (req, res) => {
     const { name, password } = req.body;
+    const session = driver.session();
 
     try {
-        // Check if the user exists in the database
-        const existingUserQuery = `
+        const existingUserQuery = `MATCH (u:User {name: $name}) RETURN u`;
+        const existingUserResult = await session.run(existingUserQuery, { name });
+
+        const roleCheckQuery = `
             MATCH (u:User {name: $name})
-            RETURN u
+            OPTIONAL MATCH (u)-[:HAS_ROLE]->(r)
+            RETURN r
         `;
-        const existingUserResult = await Session.run(existingUserQuery, { name });
+        const result = await Session.run(roleCheckQuery, { name });
+
+        const role = result.records[0].get('r');
+
+        // Fetch profile details based on role (as before)
+        const userType = role.labels[0].toLowerCase(); // Assuming labels are Student/Teacher
 
         if (existingUserResult.records.length === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -150,35 +187,33 @@ app.post('/user', async (req, res) => {
 
         const user = existingUserResult.records[0].get('u').properties;
 
-        // Validate password (add bcrypt for hashed passwords)
         if (user.password !== password) {
             return res.status(401).json({ success: false, message: 'Incorrect password' });
         }
 
-        // Set the session and redirect to the dashboard
         req.session.user = {
             name: user.name,
             email: user.email,
             avatarUrl: user.avatarUrl || '/images/download.png',
+            role: userType
         };
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Error interacting with Neo4j:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
+    } finally {
+        await session.close();
     }
 });
-
 
 app.post('/add-user', async (req, res) => {
     const { name, email, password } = req.body;
     const defaultAvatar = '/images/download.png';
+    const session = driver.session();
 
     try {
-        const existingUserQuery = `
-            MATCH (u:User {email: $email})
-            RETURN u
-        `;
-        const existingUserResult = await Session.run(existingUserQuery, { email });
+        const existingUserQuery = `MATCH (u:User {email: $email}) RETURN u`;
+        const existingUserResult = await session.run(existingUserQuery, { email });
 
         if (existingUserResult.records.length > 0) {
             return res.status(400).send('User already exists with this email');
@@ -189,8 +224,7 @@ app.post('/add-user', async (req, res) => {
             SET u.avatarUrl = $defaultAvatar
             RETURN u
         `;
-        const createUserResult = await Session.run(createUserQuery, { name, email, password, defaultAvatar });
-
+        const createUserResult = await session.run(createUserQuery, { name, email, password, defaultAvatar });
 
         const createdUser = createUserResult.records[0].get('u').properties;
 
@@ -204,9 +238,10 @@ app.post('/add-user', async (req, res) => {
     } catch (error) {
         console.error('Error adding user:', error);
         res.status(500).send('Error adding user: ' + error.message);
+    } finally {
+        await session.close();
     }
 });
-
 
 app.get('/dashboard', async (req, res) => {
     const defaultAvatar = '/images/download.png';
@@ -270,15 +305,11 @@ app.get('/profile', async (req, res) => {
         const result = await Session.run(roleCheckQuery, { userName });
 
         const role = result.records[0].get('r');
-        if (!role) {
-            // If the user has no role, prompt to select
-            return res.render('select-role', { user: req.session.user });
-        }
 
         // Fetch profile details based on role (as before)
         const userType = role.labels[0].toLowerCase(); // Assuming labels are Student/Teacher
-        req.session.user.userType = userType;
-
+        req.session.user.role = userType;
+        
         res.render('profile', { user: req.session.user });
     } catch (error) {
         console.error('Error checking role:', error);
@@ -286,22 +317,20 @@ app.get('/profile', async (req, res) => {
     }
 });
 
+// Example for a query inside a route
 app.post('/select-role', async (req, res) => {
-    const { role } = req.body; // Get the role from the request body
+    const { role } = req.body;
+    if (!req.session.user) {
+        return res.status(401).send('Unauthorized');
+    }
+
+    const session = driver.session(); // Create a new session for this route
+    const userName = req.session.user.name;
+    const userEmail = req.session.user.email;
+
     try {
-        
-        // Check if the session exists and the user is logged in
-        if (!req.session.user) {
-            console.log("User not authenticated");
-            return res.status(401).send('Unauthorized');
-        }
-
-        const userName = req.session.user.name;
-        const userEmail = req.session.user.email;
-
         let createNodeQuery;
 
-        // Check and set up role-specific queries
         if (role === "Student") {
             createNodeQuery = `
                 MATCH (u:User {name: $userName})
@@ -330,17 +359,15 @@ app.post('/select-role', async (req, res) => {
             return res.status(400).send('Invalid role selected');
         }
 
-        // Run the query in Neo4j
-        await Session.run(createNodeQuery, { userName, userEmail });
+        await session.run(createNodeQuery, { userName, userEmail });
 
-        // Update the session with the user's type
-        req.session.user.userType = role.toLowerCase();
-
-        // Respond with a success message
+        req.session.user.role = role.toLowerCase();
         res.status(200).send('Role set successfully');
     } catch (error) {
         console.error('Error creating role node:', error);
         res.status(500).send('Failed to create role node');
+    } finally {
+        await session.close(); // Close the session to avoid leaks
     }
 });
 
@@ -355,7 +382,6 @@ app.post('/update-role', async (req, res) => {
         const userName = req.session.user.name;
         const userEmail = req.session.user.email;
 
-        let roleNode;
         let createNodeQuery;
         
         // Remove the existing role node if present
@@ -398,7 +424,7 @@ app.post('/update-role', async (req, res) => {
         await Session.run(createNodeQuery, { userName, userEmail });
 
         // Update the session with the user's new type
-        req.session.user.userType = newRole.toLowerCase();
+        req.session.user.role = newRole.toLowerCase();
 
         // Respond with a success message
         res.status(200).send('Role updated successfully');

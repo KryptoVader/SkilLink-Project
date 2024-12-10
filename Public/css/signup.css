@@ -72,39 +72,21 @@ input {
     color: aliceblue;
 }
 
-.sign-up button {
-    width: 100%;
-    position: relative;
-    left: 5px;
-    padding: 5px;
-    border-radius: 5px;
-    border: none;
-    margin-top: 5px;
-    background-color: rgb(255, 255, 255, 0.3);
-    font-weight: 700;
-}
-
-.sign-up button:hover {
-    transform: scale(1.1);
-    transition: transform 0.5s ease-in-out;
-    cursor: pointer;
-}
-
+.sign-up button,
 .sign-in button {
     width: 100%;
-    position: relative;
-    left: 5px;
-    padding: 5px;
+    padding: 10px;
     border-radius: 5px;
     border: none;
-    margin-top: 5px;
-    background-color: rgb(255, 255, 255, 0.3);
+    margin-top: 10px;
+    background-color: rgba(255, 255, 255, 0.3);
     font-weight: 700;
+    transition: transform 0.3s ease-in-out;
 }
 
+.sign-up button:hover,
 .sign-in button:hover {
     transform: scale(1.1);
-    transition: transform 0.5s ease-in-out;
     cursor: pointer;
 }
 
@@ -130,8 +112,6 @@ input {
 
 .overlay-container.active {
     transform: translateX(100%);
-    background-color: #2563eb;
-    transform: all 0.5s ease-in-out;
 }
 
 .overlay button {
@@ -140,17 +120,16 @@ input {
     border: none;
     border-radius: 5px;
     font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.5s ease;
-    margin-top: 15px;
     color: #2563eb;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin-top: 15px;
 }
 
 .overlay h2,
 .overlay p {
     color: white;
     font-family: 'Montserrat', sans-serif;
-    transition: all 0.5s ease-in-out;
 }
 
 .overlay button:hover {
@@ -176,18 +155,18 @@ input {
     color: black;
     font-size: 0.9rem;
 }
-
 .google-login {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 20px;
+    padding: 10px 20px;
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 250px;
+    height: 50px;
     margin: 20px auto;
 }
 
@@ -196,58 +175,37 @@ input {
     align-items: center;
     justify-content: center;
     background-color: #4285f4;
-    color: white;
     border: none;
     border-radius: 5px;
     font-size: 16px;
     padding: 10px 20px;
     cursor: pointer;
     text-decoration: none;
-    transition: box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
-.google-login:hover {
+.google-sign-in a {
+    position: relative;
+    bottom: 3px;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: bold;
+}
+
+.google-login:hover{
     transform: scale(1.1);
-    transition: transform 0.5s ease-in-out;
-    cursor: pointer;
-}
-
-.google-login svg {
-    width: 24px;
-    height: 24px;
-    margin-top: 5px;
-}
-
-
-.google-sign-in:hover {
-    background-color: #357ae8;
-    color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
 }
 
 .google-login button:hover{
     transform: scale(1);
 }
-
-.google-sign-in a:hover {
-    color: white;
-}
-
-.google-sign-in a {
-    text-decoration: none;
-    color: #357ae8;
-    font-weight: bold;
-}
-
 .google-sign-in svg {
+    width: 24px;
+    height: 24px;
     margin-left: 10px;
 }
 
-svg {
-    fill: #4285f4;
-    transition: fill 0.3s ease;
-}
-
-.google-login:hover svg {
-    fill: #357ae8;
+.google-login svg {
+    fill: #357ae8; /* Change the icon color to primary color on hover */
 }

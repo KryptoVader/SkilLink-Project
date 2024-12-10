@@ -133,7 +133,7 @@
                         Professional Information
                     </h2>
                     <!-- Student Specific Fields -->
-                    <div id="studentFields" class="<%= user.userType === 'student' ? '' : 'hidden' %>">
+                    <div id="studentFields" class="<%= user.role === 'student' ? '' : 'hidden' %>">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">University</label>
@@ -155,7 +155,7 @@
                     </div>
 
                     <!-- Teacher Specific Fields -->
-                    <div id="teacherFields" class="<%= user.userType === 'teacher' ? '' : 'hidden' %>">
+                    <div id="teacherFields" class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">Institution</label>
@@ -180,21 +180,21 @@
                 <!-- Role Change Section -->
                 <hr class="my-6 border-gray-300">
                 <div class="text-center">
-                    <div class="<%= user.userType === 'student' ? '' : 'hidden' %>">
+                    <div class="<%= user.role === 'student' ? '' : 'hidden' %>">
                         <h3 class="text-lg font-semibold mb-4">Not a student?</h3>
                     </div>
 
-                    <div class="<%= user.userType === 'teacher' ? '' : 'hidden' %>">
+                    <div class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
                         <h3 class="text-lg font-semibold mb-4">Not a teacher?</h3>
                     </div>
                     <div class="space-x-4">
-                        <div class="<%= user.userType === 'teacher' ? '' : 'hidden' %>">
+                        <div class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
                             <button type="button" onclick="updateRole('Student')" 
                                     class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
                                 Set as Student
                             </button>
                         </div>
-                        <div class="<%= user.userType === 'student' ? '' : 'hidden' %>">
+                        <div class="<%= user.role === 'student' ? '' : 'hidden' %>">
                             <button type="button" onclick="updateRole('Teacher')" 
                                     class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
                                 Set as Teacher

@@ -24,7 +24,8 @@
     <!-- Navigation Bar (Unchanged) -->
     <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
+            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/"
+                    class="text-decoration:none">SkillLink</a></div>
             <div class="nav-links flex space-x-6">
                 <a href="/dashboard" id="home-link"
                     class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
@@ -55,44 +56,47 @@
 
     <div class="flex mt-16">
         <!-- Vertical Servers Bar -->
-        <% if (!user.userType) { %>
+        <% if (!user.role) { %>
             <script>
                 window.onload = function () {
                     // Prompt the user to choose between 'Student' or 'Teacher'
-                    let choice = confirm("Are you a Student? Click 'OK' for Student or 'Cancel' for Teacher.");
-                    let role = choice ? "Student" : "Teacher"; // Set the role based on user's choice
+                    let choice = prompt("Enter 'Student' for Student or 'Teacher' for Teacher");
             
-                    // Log the role to verify it's being set correctly
-                    console.log("Role selected:", role);
-            
-                    // Send the selected role to the backend
-                    fetch('/select-role', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json' // Make sure the request content type is set to JSON
-                        },
-                        body: JSON.stringify({ role }) // Properly stringify the role object
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.reload(); // Reload the page to reflect the selected role
-                        } else {
-                            alert("Failed to set your role. Please try again.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        alert("An error occurred. Please try again later.");
-                    });
+                    // Validate user input
+                    if (choice && (choice.toLowerCase() === "student" || choice.toLowerCase() === "teacher")) {
+                        let role = choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase(); // Normalize the role input
+                        
+                        // Send the selected role to the backend
+                        fetch('/select-role', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json' // Ensure JSON format for the request
+                            },
+                            body: JSON.stringify({ role }) // Properly stringify the role object
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.reload(); // Reload the page to reflect the selected role
+                            } else {
+                                alert("Failed to set your role. Please try again.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            alert("An error occurred. Please try again later.");
+                        });
+                    } else {
+                        alert("Invalid choice. Please refresh and enter 'Student' or 'Teacher'.");
+                    }
                 };
             </script>
             <% } %>
-            
-
 
                 <div
                     class="absolute top-16 left-0 w-16 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] flex flex-col items-center py-3 space-y-2 overflow-y-auto">
-                    <button class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-inbox text-white" onclick="window.location.href='/dashboard'"></button>
+                    <button
+                        class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-inbox text-white"
+                        onclick="window.location.href='/dashboard'"></button>
                     <div class="w-[50px] bg-gray-400 my-2 h-[2px]"></div>
 
                     <!-- Groups/Servers Section -->
@@ -106,7 +110,9 @@
                                 </div>
                                 <% }); %>
                                     <% } else { %>
-                                            <button class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white" onclick="window.location.href='/project'"></button>
+                                        <button
+                                            class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white"
+                                            onclick="window.location.href='/project'"></button>
                                         <% } %>
                     </div>
                 </div>
@@ -156,13 +162,156 @@
                 </div>
 
                 <!-- Main Content -->
-                <div class="flex-1 ml-[300px]">
-                    <div class="w-full bg-white p-6 border-b border-gray-200">
+                <div class="flex-1 ml-[300px] bg-blue-200">
+                    <div class="w-full bg-white p-6 border-b border-gray-300 flex justify-between items-center">
                         <h2 class="text-2xl font-bold mb-4 text-[#2563eb]">Welcome, <%= user.name %>!</h2>
-                        <!-- Add your content here -->
+                        <div class="flex items-center space-x-3">
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+                                <i class="fas fa-plus mr-2"></i>Create Project
+                            </button>
+                            <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
+                                <i class="fas fa-handshake mr-2"></i>Find Collaborators
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Professional Chat/Collaboration Space -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-3 gap-6">
+                            <!-- Active Projects Column -->
+                            <div class="bg-white shadow rounded-lg p-4">
+                                <h3 class="text-lg font-semibold mb-4 text-blue-600">
+                                    <i class="fas fa-project-diagram mr-2"></i>Active Projects
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="bg-gray-300 p-3 rounded-md">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h4 class="font-medium">AI Ethics Framework</h4>
+                                            <span
+                                                class="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full">In
+                                                Progress</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="flex -space-x-2 mr-2">
+                                                <img src="/images/avatar1.jpg" alt="Team Member"
+                                                    class="w-6 h-6 rounded-full border-2 border-white">
+                                                <img src="/images/avatar2.jpg" alt="Team Member"
+                                                    class="w-6 h-6 rounded-full border-2 border-white">
+                                                <img src="/images/avatar3.jpg" alt="Team Member"
+                                                    class="w-6 h-6 rounded-full border-2 border-white">
+                                            </div>
+                                            <span class="text-xs text-gray-600">3 collaborators</span>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-300 p-3 rounded-md">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h4 class="font-medium">Sustainable Tech Solutions</h4>
+                                            <span
+                                                class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">Ongoing</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="flex -space-x-2 mr-2">
+                                                <img src="/images/avatar4.jpg" alt="Team Member"
+                                                    class="w-6 h-6 rounded-full border-2 border-white">
+                                                <img src="/images/avatar5.jpg" alt="Team Member"
+                                                    class="w-6 h-6 rounded-full border-2 border-white">
+                                            </div>
+                                            <span class="text-xs text-gray-600">2 collaborators</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Knowledge Sharing Column -->
+                            <div class="bg-white shadow rounded-lg p-4">
+                                <h3 class="text-lg font-semibold mb-4 text-blue-600">
+                                    <i class="fas fa-lightbulb mr-2"></i>Knowledge Sharing
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="bg-gray-300 p-3 rounded-md">
+                                        <h4 class="font-medium mb-2">Upcoming Webinar</h4>
+                                        <p class="text-sm text-gray-700">AI Ethics and Responsible Innovation</p>
+                                        <div class="mt-2 flex justify-between items-center">
+                                            <span class="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">Next
+                                                Week</span>
+                                            <button class="text-blue-600 text-xs hover:underline">Register</button>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-300 p-3 rounded-md">
+                                        <h4 class="font-medium mb-2">Latest Research Paper</h4>
+                                        <p class="text-sm text-gray-700">Breakthrough in Quantum Computing Algorithms
+                                        </p>
+                                        <div class="mt-2 flex justify-between items-center">
+                                            <span
+                                                class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">New</span>
+                                            <button class="text-blue-600 text-xs hover:underline">View</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section id="discordChat" class="bg-white rounded-lg shadow-lg p-4 my-6">
+                        <h2 class="text-xl font-bold mb-4 text-[var(--primary)]">Tech Innovations Lounge</h2>
+                        <!-- Chat Messages -->
+                        <div class="chat-box bg-gray-200 p-4 rounded-lg overflow-y-auto" style="height: 400px;">
+                            <div class="message mb-3">
+                                <span class="font-semibold text-blue-600">@AIResearcher:</span>
+                                <span>Hey team, has anyone seen the latest DeepMind paper on transformers?</span>
+                            </div>
+                            <div class="message mb-3">
+                                <span class="font-semibold text-green-600">@CodeNinja:</span>
+                                <span>Not yet! Can you drop the link? Working on implementing some of their techniques in my current project.</span>
+                            </div>
+                            <div class="message mb-3">
+                                <span class="font-semibold text-purple-600">@DataWizard:</span>
+                                <span>Check out this interesting visualization I made for our quantum computing research!</span>
+                                <a href="#" class="text-[var(--primary)] underline ml-2">Quantum_Research_Viz.png</a>
+                            </div>
+                            <div class="message mb-3">
+                                <span class="font-semibold text-red-600">@ProductManager:</span>
+                                <span>Reminder: We have our sprint planning meeting in 30 minutes. Please review the Kanban board before joining.</span>
+                            </div>
+                            <div class="message mb-3">
+                                <span class="font-semibold text-orange-600">@UXDesigner:</span>
+                                <span>Quick question for the team - what do you think about implementing dark mode in our next release?</span>
+                            </div>
+                            <div class="message mb-3">
+                                <span class="font-semibold text-indigo-600">@CloudArchitect:</span>
+                                <span>I've updated the infrastructure diagram. Feedback is welcome!</span>
+                                <a href="#" class="text-[var(--primary)] underline ml-2">Infrastructure_v3.pdf</a>
+                            </div>
+                        </div>
+                        <!-- Message Input Area -->
+                <div class="p-4 bg-gray-200">
+                    <div class="bg-white rounded-lg p-2 flex items-center shadow-sm">
+                        <button class="mx-2 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-plus-circle"></i>
+                        </button>
+                        <input 
+                            type="text" 
+                            placeholder="Message #tech-innovations-lounge" 
+                            class="flex-1 bg-transparent outline-none px-2 py-1"
+                        >
+                        <div class="flex items-center space-x-2">
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-gift"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-md ml-2 hover:opacity-90">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
     </div>
 </body>
-
 </html>
