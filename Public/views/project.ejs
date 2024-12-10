@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillLink | Explore Projects</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --discord-blurple: #5865F2;
+            --dark-gray: #1f2937;
+            --soft-background: #f3f4f6;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--soft-background);
+        }
+
+        .project-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
+            <div class="nav-links flex space-x-6">
+                <a href="/dashboard" id="home-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
+                <a href="/profile" id="profile-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Profile</a>
+                <a href="/mentor" id="mentor-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentor</a>
+                <div class="profile flex items-center space-x-4">
+                    <a href="/profile" class="transition transform hover:scale-105"><img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full"></a>
+                    <div class="relative group">
+                        <button class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
+                        <div class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
+                            <a href="/settings" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 pt-24">
+        <!-- Projects Header -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-800">Explore Projects</h1>
+                
+                <!-- Filters -->
+                <div class="flex space-x-4">
+                    <select class="border rounded-md px-3 py-2">
+                        <option>All Categories</option>
+                        <option>Web Development</option>
+                        <option>Data Science</option>
+                        <option>AI & Machine Learning</option>
+                        <option>Product Management</option>
+                    </select>
+                    <input type="text" placeholder="Search projects..." class="border rounded-md px-3 py-2 w-64">
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Project Card Template -->
+            <div class="bg-white rounded-lg shadow-md p-6 project-card overflow-hidden">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Open Source E-commerce Platform</h2>
+                    <p class="text-gray-500">Category: Web Development</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-700 mb-2">Description</h3>
+                    <p class="text-gray-600 text-sm">A fully open-source e-commerce platform built with React, Node.js, and MongoDB. Contribute to building scalable and performant features.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-700 mb-2">Skills Required</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">React.js</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Node.js</span>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">MongoDB</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button class="bg-[var(--discord-blurple)] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition">
+                        Apply to Contribute
+                    </button>
+                    <button class="border border-gray-300 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-100 transition">
+                        View Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Additional project cards can be dynamically populated here -->
+            <div class="bg-white rounded-lg shadow-md p-6 project-card overflow-hidden">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">AI-Powered Chatbot</h2>
+                    <p class="text-gray-500">Category: AI & Machine Learning</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-700 mb-2">Description</h3>
+                    <p class="text-gray-600 text-sm">Develop a chatbot using NLP and deep learning techniques to provide customer support across various domains.</p>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-700 mb-2">Skills Required</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">Python</span>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">NLP</span>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">TensorFlow</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button class="bg-[var(--discord-blurple)] text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition">
+                        Apply to Contribute
+                    </button>
+                    <button class="border border-gray-300 text-gray-600 px-4 py-2 rounded-md hover:bg-gray-100 transition">
+                        View Details
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center items-center space-x-4 mt-8">
+            <button class="px-4 py-2 border rounded-md hover:bg-gray-100">
+                <i class="fas fa-chevron-left mr-2"></i>Previous
+            </button>
+            <div class="space-x-2">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-md">1</button>
+                <button class="px-4 py-2 hover:bg-gray-100 rounded-md">2</button>
+                <button class="px-4 py-2 hover:bg-gray-100 rounded-md">3</button>
+            </div>
+            <button class="px-4 py-2 border rounded-md hover:bg-gray-100">
+                Next<i class="fas fa-chevron-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12 py-8">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            © 2024 SkillLink. Connect, Learn, Grow.
+        </div>
+    </footer>
+</body>
+</html>

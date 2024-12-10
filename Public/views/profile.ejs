@@ -22,12 +22,11 @@
     <!-- Navigation Bar (LinkedIn-inspired) -->
     <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="logo text-[var(--primary)] text-2xl font-bold">SkillLink</div>
+            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
             <div class="nav-links flex space-x-6">
-                <a href="/" id="home-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
-                <a href="/mentors" id="mentor-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentors</a>
-                <a href="/projects" id="projects-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Projects</a>
-                <a href="/dashboard" id="profile-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Dashboard</a>
+                <a href="/dashboard" id="home-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
+                <a href="/mentor" id="mentor-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentors</a>
+                <a href="/project" id="projects-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Projects</a>
                 <div class="profile flex items-center space-x-4">
                     <a href="/profile" class="transition transform hover:scale-105"><img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full"></a>
                     <div class="relative group">

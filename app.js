@@ -10,11 +10,8 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import multer from 'multer';
 
-
 //Add the changes like saving the email and things to session when using /user and etc.
-
 dotenv.config();
-
 const app = express()
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const driver = neo4j.driver(
@@ -215,7 +212,7 @@ app.get('/dashboard', async (req, res) => {
     const defaultAvatar = '/images/download.png';
     try {
         if (!req.session.user) {
-            return res.redirect('/'); // Redirect if not logged in
+            return res.redirect('/login'); // Redirect if not logged in
         }
 
         // Set a default avatar if not provided
@@ -260,7 +257,7 @@ app.get('/dashboard', async (req, res) => {
 
 app.get('/profile', async (req, res) => {
     try {
-        if (!req.session.user) return res.redirect('/');
+        if (!req.session.user) return res.redirect('/login');
 
         const userName = req.session.user.name;
 
@@ -289,12 +286,9 @@ app.get('/profile', async (req, res) => {
     }
 });
 
-
 app.post('/select-role', async (req, res) => {
     const { role } = req.body; // Get the role from the request body
     try {
-        // Log the role for debugging purposes
-        console.log("Role received:", role);
         
         // Check if the session exists and the user is logged in
         if (!req.session.user) {
@@ -333,7 +327,6 @@ app.post('/select-role', async (req, res) => {
                 CREATE (u)-[:HAS_ROLE]->(t)
             `;
         } else {
-            console.log("Invalid role received:", role);
             return res.status(400).send('Invalid role selected');
         }
 
@@ -412,6 +405,28 @@ app.post('/update-role', async (req, res) => {
     } catch (error) {
         console.error('Error updating role:', error);
         res.status(500).send('Failed to update role');
+    }
+});
+
+app.get('/mentor', async (req,res) => {
+    try {
+        if (!req.session.user) return res.redirect('/login');
+
+        res.render('mentor', { user: req.session.user });
+    } catch (error) {
+        console.error('Error loading mentor:', error);
+        res.status(500).send('An error occurred.');
+    }
+});
+
+app.get('/project', async (req,res) => {
+    try {
+        if (!req.session.user) return res.redirect('/login');
+
+        res.render('project', { user: req.session.user });
+    } catch (error) {
+        console.error('Error loading mentor:', error);
+        res.status(500).send('An error occurred.');
     }
 });
 

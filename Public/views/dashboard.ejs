@@ -24,13 +24,13 @@
     <!-- Navigation Bar (Unchanged) -->
     <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="logo text-[var(--primary)] text-2xl font-bold">SkillLink</div>
+            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
             <div class="nav-links flex space-x-6">
-                <a href="/" id="home-link"
+                <a href="/dashboard" id="home-link"
                     class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
-                <a href="/mentors" id="mentor-link"
+                <a href="/mentor" id="mentor-link"
                     class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentors</a>
-                <a href="/projects" id="projects-link"
+                <a href="/project" id="projects-link"
                     class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Projects</a>
                 <a href="/profile" id="profile-link"
                     class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Profile</a>
@@ -92,10 +92,7 @@
 
                 <div
                     class="absolute top-16 left-0 w-16 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] flex flex-col items-center py-3 space-y-2 overflow-y-auto">
-                    <div
-                        class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600">
-                        <i class="fas fa-inbox text-white"></i>
-                    </div>
+                    <button class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-inbox text-white" onclick="window.location.href='/dashboard'"></button>
                     <div class="w-[50px] bg-gray-400 my-2 h-[2px]"></div>
 
                     <!-- Groups/Servers Section -->
@@ -109,10 +106,7 @@
                                 </div>
                                 <% }); %>
                                     <% } else { %>
-                                        <div
-                                            class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600">
-                                            <i class="fas fa-plus text-white"></i>
-                                        </div>
+                                            <button class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white" onclick="window.location.href='/project'"></button>
                                         <% } %>
                     </div>
                 </div>
