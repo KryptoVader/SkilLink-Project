@@ -61,11 +61,11 @@
                 window.onload = function () {
                     // Prompt the user to choose between 'Student' or 'Teacher'
                     let choice = prompt("Enter 'Student' for Student or 'Teacher' for Teacher");
-            
+
                     // Validate user input
                     if (choice && (choice.toLowerCase() === "student" || choice.toLowerCase() === "teacher")) {
                         let role = choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase(); // Normalize the role input
-                        
+
                         // Send the selected role to the backend
                         fetch('/select-role', {
                             method: 'POST',
@@ -74,17 +74,17 @@
                             },
                             body: JSON.stringify({ role }) // Properly stringify the role object
                         })
-                        .then(response => {
-                            if (response.ok) {
-                                window.location.reload(); // Reload the page to reflect the selected role
-                            } else {
-                                alert("Failed to set your role. Please try again.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            alert("An error occurred. Please try again later.");
-                        });
+                            .then(response => {
+                                if (response.ok) {
+                                    window.location.reload(); // Reload the page to reflect the selected role
+                                } else {
+                                    alert("Failed to set your role. Please try again.");
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                                alert("An error occurred. Please try again later.");
+                            });
                     } else {
                         alert("Invalid choice. Please refresh and enter 'Student' or 'Teacher'.");
                     }
@@ -193,11 +193,14 @@
                                         </div>
                                         <div class="flex items-center">
                                             <div class="flex -space-x-2 mr-2">
-                                                <img src="/images/avatar1.jpg" alt="Team Member"
+                                                <img src="https://randomuser.me/api/portraits/men/1.jpg"
+                                                    alt="Team Member"
                                                     class="w-6 h-6 rounded-full border-2 border-white">
-                                                <img src="/images/avatar2.jpg" alt="Team Member"
+                                                <img src="https://randomuser.me/api/portraits/women/2.jpg"
+                                                    alt="Team Member"
                                                     class="w-6 h-6 rounded-full border-2 border-white">
-                                                <img src="/images/avatar3.jpg" alt="Team Member"
+                                                <img src="https://randomuser.me/api/portraits/men/3.jpg"
+                                                    alt="Team Member"
                                                     class="w-6 h-6 rounded-full border-2 border-white">
                                             </div>
                                             <span class="text-xs text-gray-600">3 collaborators</span>
@@ -211,9 +214,11 @@
                                         </div>
                                         <div class="flex items-center">
                                             <div class="flex -space-x-2 mr-2">
-                                                <img src="/images/avatar4.jpg" alt="Team Member"
+                                                <img src="https://randomuser.me/api/portraits/women/4.jpg"
+                                                    alt="Team Member"
                                                     class="w-6 h-6 rounded-full border-2 border-white">
-                                                <img src="/images/avatar5.jpg" alt="Team Member"
+                                                <img src="https://randomuser.me/api/portraits/men/5.jpg"
+                                                    alt="Team Member"
                                                     class="w-6 h-6 rounded-full border-2 border-white">
                                             </div>
                                             <span class="text-xs text-gray-600">2 collaborators</span>
@@ -253,65 +258,129 @@
                     </div>
 
                     <section id="discordChat" class="bg-white rounded-lg shadow-lg p-4 my-6">
-                        <h2 class="text-xl font-bold mb-4 text-[var(--primary)]">Tech Innovations Lounge</h2>
+                        <div class="flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 text-blue-500 hover:text-green-500 transform hover:scale-110 transition-all duration-300">
+                                <circle cx="12" cy="12" r="10" class="fill-current opacity-20" />
+                                <path d="M12 4a8 8 0 00-8 8c0 2 .7 3.9 1.9 5.4l1.4-1.4A5.98 5.98 0 016 12a6 6 0 0112 0c0 1.6-.6 3-1.6 4l1.5 1.5A8 8 0 0012 4z" class="fill-current"/>
+                                <path d="M15.5 12a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" class="fill-current opacity-80"/>
+                                <circle cx="12" cy="12" r="2" class="fill-current text-white opacity-100"/>
+                              </svg>
+                            <h2 class="text-xl font-bold mb-4 text-[var(--primary)] relative top-2">Tech Innovations Lounge</h2>
+                        </div>
                         <!-- Chat Messages -->
-                        <div class="chat-box bg-gray-200 p-4 rounded-lg overflow-y-auto" style="height: 400px;">
-                            <div class="message mb-3">
-                                <span class="font-semibold text-blue-600">@AIResearcher:</span>
-                                <span>Hey team, has anyone seen the latest DeepMind paper on transformers?</span>
-                            </div>
-                            <div class="message mb-3">
-                                <span class="font-semibold text-green-600">@CodeNinja:</span>
-                                <span>Not yet! Can you drop the link? Working on implementing some of their techniques in my current project.</span>
-                            </div>
-                            <div class="message mb-3">
-                                <span class="font-semibold text-purple-600">@DataWizard:</span>
-                                <span>Check out this interesting visualization I made for our quantum computing research!</span>
-                                <a href="#" class="text-[var(--primary)] underline ml-2">Quantum_Research_Viz.png</a>
-                            </div>
-                            <div class="message mb-3">
-                                <span class="font-semibold text-red-600">@ProductManager:</span>
-                                <span>Reminder: We have our sprint planning meeting in 30 minutes. Please review the Kanban board before joining.</span>
-                            </div>
-                            <div class="message mb-3">
-                                <span class="font-semibold text-orange-600">@UXDesigner:</span>
-                                <span>Quick question for the team - what do you think about implementing dark mode in our next release?</span>
-                            </div>
-                            <div class="message mb-3">
-                                <span class="font-semibold text-indigo-600">@CloudArchitect:</span>
-                                <span>I've updated the infrastructure diagram. Feedback is welcome!</span>
-                                <a href="#" class="text-[var(--primary)] underline ml-2">Infrastructure_v3.pdf</a>
+                        <div class="flex-1 overflow-y-auto p-4 bg-gray-300 space-y-4" id="chatMessages">
+                            <!-- Initial Chat Messages -->
+                            <div class="flex flex-col space-y-4">
+                                <div class="flex items-start space-x-3">
+                                    <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Student1"
+                                        class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="font-semibold text-blue-600">@Student1</span>
+                                            <span class="text-xs text-gray-500">10:15 AM</span>
+                                        </div>
+                                        <div class="chat-message received-message rounded-lg p-3 shadow-sm bg-white">
+                                            Hey everyone! Is anyone working on emerging tech trends for our research
+                                            project? I'm particularly interested in how AI and machine learning are
+                                            transforming different industries.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="Student2"
+                                        class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="font-semibold text-green-600">@Student2</span>
+                                            <span class="text-xs text-gray-500">10:17 AM</span>
+                                        </div>
+                                        <div class="chat-message received-message rounded-lg p-3 shadow-sm bg-white">
+                                            I'm interested in exploring AI's impact on sustainable technologies. Anyone
+                                            want
+                                            to collaborate on a research paper about how machine learning can optimize
+                                            renewable energy systems?
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="Student3"
+                                        class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="font-semibold text-purple-600">@Student3</span>
+                                            <span class="text-xs text-gray-500">10:20 AM</span>
+                                        </div>
+                                        <div class="chat-message received-message rounded-lg p-3 shadow-sm bg-white">
+                                            Quantum computing looks fascinating. Has anyone done research in this area?
+                                            I'm
+                                            particularly curious about quantum algorithms and their potential to solve
+                                            complex computational problems.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <img src="https://randomuser.me/api/portraits/women/4.jpg" alt="Student4"
+                                        class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="font-semibold text-red-600">@Student4</span>
+                                            <span class="text-xs text-gray-500">10:22 AM</span>
+                                        </div>
+                                        <div class="chat-message received-message rounded-lg p-3 shadow-sm bg-white">
+                                            @Student3 I've been reading about quantum computing for a research project.
+                                            IBM
+                                            and Google are making significant strides in developing quantum processors.
+                                            Would you like to share some resources?
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start space-x-3">
+                                    <img src="https://randomuser.me/api/portraits/men/5.jpg" alt="Student5"
+                                        class="w-10 h-10 rounded-full">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="font-semibold text-indigo-600">@Student5</span>
+                                            <span class="text-xs text-gray-500">10:25 AM</span>
+                                        </div>
+                                        <div class="chat-message received-message rounded-lg p-3 shadow-sm bg-white">
+                                            This discussion is getting interesting! @Student2, your idea about AI in
+                                            sustainable technologies sounds promising. Would love to hear more about
+                                            potential research directions.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <!-- Message Input Area -->
-                <div class="p-4 bg-gray-200">
-                    <div class="bg-white rounded-lg p-2 flex items-center shadow-sm">
-                        <button class="mx-2 text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-plus-circle"></i>
-                        </button>
-                        <input 
-                            type="text" 
-                            placeholder="Message #tech-innovations-lounge" 
-                            class="flex-1 bg-transparent outline-none px-2 py-1"
-                        >
-                        <div class="flex items-center space-x-2">
-                            <button class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-smile"></i>
-                            </button>
-                            <button class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-gift"></i>
-                            </button>
-                            <button class="text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-image"></i>
-                            </button>
-                            <button class="bg-[var(--primary-color)] text-white px-4 py-2 rounded-md ml-2 hover:opacity-90">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+
+                        <!-- Message Input -->
+                        <div class="bg-white border-t p-4">
+                            <div class="flex items-center space-x-2">
+                                <button class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-smile text-xl"></i>
+                                </button>
+                                <button class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-paperclip text-xl"></i>
+                                </button>
+                                <div class="flex-1">
+                                    <input type="text" id="messageInput" placeholder="Type your message"
+                                        class="w-full p-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                                </div>
+                                <button id="sendButton"
+                                    class="bg-[var(--primary)] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-90">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
                 </div>
-            </div>
-        </div>
+                </section>
+    </div>
+    </div>
+    </div>
     </div>
 </body>
+
 </html>

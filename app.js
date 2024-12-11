@@ -61,7 +61,7 @@ passport.use(
                 
                 // Save or update the user in the database
                 const result = await session.run(
-                    `MERGE (u:User {user_id: $googleId}) 
+                    `MERGE (u:User {googleId: $googleId}) 
                      ON CREATE SET u.email = $email, u.name = $name, u.avatarUrl = $avatarUrl
                      ON MATCH SET u.avatarUrl = $avatarUrl
                      RETURN u`,
@@ -81,15 +81,16 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-    done(null, user.user_id);
+    // Store the googleId instead of user_id
+    done(null, user.googleId);
 });
 
-passport.deserializeUser(async (userId, done) => {
+passport.deserializeUser(async (googleId, done) => {
     const session = driver.session();
     try {
         const result = await session.run(
-            `MATCH (u:User {user_id: $userId}) RETURN u`,
-            { userId }
+            `MATCH (u:User {googleId: $googleId}) RETURN u`,
+            { googleId }
         );
 
         if (result.records.length === 0) {
@@ -129,28 +130,26 @@ app.get("/auth/google/callback",
     async (req, res) => {
         const session = driver.session();
         try {
-            const userId = req.user.user_id; // From deserializeUser
+            const email = req.user.email; // From deserializeUser
             const roleQuery = `
-                MATCH (u:User {user_id: $userId})
+                MATCH (u:User {email: $email})
                 OPTIONAL MATCH (u)-[:HAS_ROLE]->(role)
                 RETURN role
             `;
-            const result = await session.run(roleQuery, { userId });
+            const result = await session.run(roleQuery, { email });
 
             const role = result.records[0]?.get('role');
 
             if (role) {
-                // If role exists, redirect to the dashboard
                 req.session.user = {
-                    ...req.user, // Existing user data
-                    role: role.labels[0].toLowerCase(), // e.g., 'student' or 'teacher'
+                    ...req.user, 
+                    role: role.labels[0].toLowerCase(),
                 };
                 return res.redirect('/dashboard');
             }
 
-            // If no role exists, redirect to select role
-            req.session.user = req.user; // Save user info in session
-            res.redirect('/select-role'); // Redirect to role selection
+            req.session.user = req.user;
+            res.redirect('/select-role');
         } catch (error) {
             console.error('Error checking user role:', error);
             res.status(500).send('Internal Server Error');
@@ -160,26 +159,13 @@ app.get("/auth/google/callback",
     }
 );
 
-
 app.post('/user', async (req, res) => {
-    const { name, password } = req.body;
+    const { email, password } = req.body;
     const session = driver.session();
 
     try {
-        const existingUserQuery = `MATCH (u:User {name: $name}) RETURN u`;
-        const existingUserResult = await session.run(existingUserQuery, { name });
-
-        const roleCheckQuery = `
-            MATCH (u:User {name: $name})
-            OPTIONAL MATCH (u)-[:HAS_ROLE]->(r)
-            RETURN r
-        `;
-        const result = await Session.run(roleCheckQuery, { name });
-
-        const role = result.records[0].get('r');
-
-        // Fetch profile details based on role (as before)
-        const userType = role.labels[0].toLowerCase(); // Assuming labels are Student/Teacher
+        const existingUserQuery = `MATCH (u:User {email: $email}) RETURN u`;
+        const existingUserResult = await session.run(existingUserQuery, { email });
 
         if (existingUserResult.records.length === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -191,11 +177,21 @@ app.post('/user', async (req, res) => {
             return res.status(401).json({ success: false, message: 'Incorrect password' });
         }
 
+        const roleCheckQuery = `
+            MATCH (u:User {email: $email})
+            OPTIONAL MATCH (u)-[:HAS_ROLE]->(r)
+            RETURN r
+        `;
+        const result = await session.run(roleCheckQuery, { email });
+
+        const role = result.records[0]?.get('r');
+        const userType = role?.labels[0]?.toLowerCase();
+
         req.session.user = {
-            name: user.name,
             email: user.email,
+            name: user.name,
             avatarUrl: user.avatarUrl || '/images/download.png',
-            role: userType
+            role: userType || null,
         };
         res.redirect('/dashboard');
     } catch (error) {
@@ -220,7 +216,7 @@ app.post('/add-user', async (req, res) => {
         }
 
         const createUserQuery = `
-            MERGE (u:User {name: $name, email: $email, password: $password})
+            MERGE (u:User {email: $email, name: $name, password: $password})
             SET u.avatarUrl = $defaultAvatar
             RETURN u
         `;
@@ -229,8 +225,8 @@ app.post('/add-user', async (req, res) => {
         const createdUser = createUserResult.records[0].get('u').properties;
 
         req.session.user = {
-            name: createdUser.name,
             email: createdUser.email,
+            name: createdUser.name,
             avatarUrl: createdUser.avatarUrl,
         };
 
@@ -253,36 +249,29 @@ app.get('/dashboard', async (req, res) => {
         // Set a default avatar if not provided
         req.session.user.avatarUrl = req.session.user.avatarUrl || defaultAvatar;
 
-        const userName = req.session.user.name;
+        const userEmail = req.session.user.email;
 
         // Query to fetch friends
         const friendsQuery = `
-            MATCH (u:User {name: $userName})-[:FRIEND_WITH]->(friend:User)
+            MATCH (u:User {email: $userEmail})-[:FRIEND_WITH]->(friend:User)
             RETURN friend
         `;
-        const friendsResult = await Session.run(friendsQuery, { userName });
+        const friendsResult = await Session.run(friendsQuery, { userEmail });
         const friends = friendsResult.records.map(record => record.get('friend').properties);
 
         // Query to fetch groups
         const groupsQuery = `
-            MATCH (u:User {name: $userName})-[:MEMBER_OF]->(group:Group)
+            MATCH (u:User {email: $userEmail})-[:MEMBER_OF]->(group:Group)
             RETURN group
         `;
-        const groupsResult = await Session.run(groupsQuery, { userName });
+        const groupsResult = await Session.run(groupsQuery, { userEmail });
         const groups = groupsResult.records.map(record => record.get('group').properties);
-
-        // Example recommendations (can be replaced with dynamic data)
-        const recommendations = [
-            { name: 'Dr. John Doe', link: '/mentors/suggestion1', description: 'AI Research' },
-            { name: 'Deep Learning Project Ideas', link: '/projects/suggestion2', description: 'Collaboration' },
-        ];
 
         // Render the dashboard
         res.render('dashboard', {
             user: req.session.user,
             friends: friends || [], // List of friends
             groups: groups || [],   // List of groups
-            recommendations,
         });
     } catch (error) {
         console.error('Error rendering dashboard:', error);
@@ -294,15 +283,15 @@ app.get('/profile', async (req, res) => {
     try {
         if (!req.session.user) return res.redirect('/login');
 
-        const userName = req.session.user.name;
+        const userEmail = req.session.user.email;
 
         // Check if the user exists as a Student or Teacher
         const roleCheckQuery = `
-            MATCH (u:User {name: $userName})
+            MATCH (u:User {email: $userEmail})
             OPTIONAL MATCH (u)-[:HAS_ROLE]->(r)
             RETURN r
         `;
-        const result = await Session.run(roleCheckQuery, { userName });
+        const result = await Session.run(roleCheckQuery, { userEmail });
 
         const role = result.records[0].get('r');
 
@@ -325,7 +314,6 @@ app.post('/select-role', async (req, res) => {
     }
 
     const session = driver.session(); // Create a new session for this route
-    const userName = req.session.user.name;
     const userEmail = req.session.user.email;
 
     try {
@@ -333,9 +321,8 @@ app.post('/select-role', async (req, res) => {
 
         if (role === "Student") {
             createNodeQuery = `
-                MATCH (u:User {name: $userName})
+                MATCH (u:User {email: $userEmail})
                 CREATE (s:Student {
-                    name: $userName,
                     email: $userEmail,
                     cgpa: 0.0,
                     skills: [],
@@ -345,9 +332,8 @@ app.post('/select-role', async (req, res) => {
             `;
         } else if (role === "Teacher") {
             createNodeQuery = `
-                MATCH (u:User {name: $userName})
+                MATCH (u:User {email: $userEmail})
                 CREATE (t:Teacher {
-                    name: $userName,
                     email: $userEmail,
                     institution: "Not specified",
                     highestDegree: "Not specified",
@@ -359,7 +345,7 @@ app.post('/select-role', async (req, res) => {
             return res.status(400).send('Invalid role selected');
         }
 
-        await session.run(createNodeQuery, { userName, userEmail });
+        await session.run(createNodeQuery, { userEmail });
 
         req.session.user.role = role.toLowerCase();
         res.status(200).send('Role set successfully');
@@ -379,23 +365,21 @@ app.post('/update-role', async (req, res) => {
             return res.status(401).send('Unauthorized');
         }
 
-        const userName = req.session.user.name;
         const userEmail = req.session.user.email;
 
         let createNodeQuery;
         
         // Remove the existing role node if present
         await Session.run(`
-            MATCH (u:User {name: $userName})-[r:HAS_ROLE]->(role)
+            MATCH (u:User {email: $userEmail})-[r:HAS_ROLE]->(role)
             DELETE r
-        `, { userName });
+        `, { userEmail });
 
         // Check and set up role-specific queries
         if (newRole === "Student") {
             createNodeQuery = `
-                MATCH (u:User {name: $userName})
+                MATCH (u:User {email: $userEmail})
                 CREATE (s:Student {
-                    name: $userName,
                     email: $userEmail,
                     cgpa: 0.0,
                     skills: [],
@@ -405,9 +389,8 @@ app.post('/update-role', async (req, res) => {
             `;
         } else if (newRole === "Teacher") {
             createNodeQuery = `
-                MATCH (u:User {name: $userName})
+                MATCH (u:User {email: $userEmail})
                 CREATE (t:Teacher {
-                    name: $userName,
                     email: $userEmail,
                     institution: "Not specified",
                     highestDegree: "Not specified",
@@ -421,7 +404,7 @@ app.post('/update-role', async (req, res) => {
         }
 
         // Run the query to create the new role node
-        await Session.run(createNodeQuery, { userName, userEmail });
+        await Session.run(createNodeQuery, { userEmail });
 
         // Update the session with the user's new type
         req.session.user.role = newRole.toLowerCase();
