@@ -35,16 +35,31 @@
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
             <div class="nav-links flex space-x-6">
-                <a href="/dashboard" id="home-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
-                <a href="/profile" id="profile-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Profile</a>
-                <a href="/mentor" id="mentor-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentor</a>
+                <a href="/dashboard" id="home-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a href="/profile" id="profile-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-user-circle mr-2"></i>Profile
+                </a>
+                <a href="/mentor" id="mentor-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
+                </a>
                 <div class="profile flex items-center space-x-4">
-                    <a href="/profile" class="transition transform hover:scale-105"><img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full"></a>
+                    <a href="/profile" class="transition transform hover:scale-105">
+                        <img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full">
+                    </a>
                     <div class="relative group">
-                        <button class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
-                        <div class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
-                            <a href="/settings" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
-                            <a href="/logout" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                        <button
+                            class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
+                        <div
+                            class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
+                            <a href="/settings"
+                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
+                            <a href="/logout"
+                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
                         </div>
                     </div>
                 </div>

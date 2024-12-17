@@ -1,0 +1,124 @@
+<div class="flex flex-col h-full">
+    <!-- Sub-Navbar -->
+    <div class="bg-white shadow p-4 flex items-center justify-between" id="chatHeader">
+        <div class="flex items-center space-x-4">
+            <img src="<%= friend.avatarUrl %>" alt="<%= friend.name %>" class="w-12 h-12 rounded-full">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">
+                    <%= friend.name %>
+                </h2>
+                <p class="text-sm text-gray-500" id="friendStatus">
+                    <% if (friend.online) { %>
+                        Online
+                        <% } else if (friend.lastSeen && friend.lastSeen !=="Invalid date" ) { %>
+                            Last seen: <%= friend.lastSeen %>
+                                <% } else { %>
+                                    Offline
+                                    <% } %>
+                </p>
+            </div>
+        </div>
+        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+            onclick="removeFriend('<%= friendId %>')">
+            Remove Friend
+        </button>
+    </div>
+
+    <!-- Chat/Collaboration Space -->
+    <div class="flex-1 overflow-y-auto p-6 bg-gray-100">
+        <div id="chatBox" class="chat-container h-[calc(100vh-12rem)] overflow-y-auto pb-20">
+            <% if (messages.length> 0) { %>
+                <% messages.forEach(message=> { %>
+                    <div class="flex items-start space-x-3">
+                        <img src="<%= message.senderAvatar %>" alt="<%= message.senderName %>"
+                            class="w-10 h-10 rounded-full">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold text-blue-600">
+                                    <%= message.senderName %>
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <%= new Date(message.timestamp).toLocaleTimeString() %>
+                                </span>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <%= message.text %>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                        <% } else { %>
+                            <div class="flex flex-col items-center justify-center flex-1 text-center text-gray-500">
+                                <h2 class="text-xl font-semibold mt-4">No messages yet</h2>
+                                <p>Start a conversation!</p>
+                            </div>
+                            <% } %>
+        </div>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="bg-white border-t p-4 fixed bottom-0 left-[19rem] right-0">
+        <form id="messageForm" onsubmit="sendMessage(event, '<%= friendId %>')">
+            <div class="flex items-center space-x-3">
+                <button type="button" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
+                    <i class="fas fa-smile text-yellow-500"></i>
+                </button>
+                <input type="text" id="messageInput" placeholder="Type your message"
+                    class="flex-1 p-2 bg-gray-100 rounded-full">
+                <button type="submit" class="bg-blue-500 text-white w-10 h-10 rounded-full">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<script>
+    // Function to refresh just the message box
+    function updateMessageBox(data) {
+        const { sender, text, timestamp, senderAvatar } = data;
+
+        const chatBox = document.getElementById('chatBox');
+        const newMessageHTML = `
+            <div class="flex items-start space-x-3">
+                <img src="${senderAvatar}" alt="${sender}" class="w-10 h-10 rounded-full">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-semibold text-blue-600">${sender}</span>
+                        <span class="text-xs text-gray-500">${new Date(timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 shadow-sm">${text}</div>
+                </div>
+            </div>
+        `;
+        chatBox.innerHTML += newMessageHTML;
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the latest message
+    }
+
+    // Add event listener for new messages
+    socket.on('receive-message', updateMessageBox);
+
+    // Function to update user status
+    function updateUserStatus(data) {
+        const { email, online, lastSeen } = data;
+        const friendEmail = "<%= friend.email %>";  // The friend you're chatting with
+
+        if (email === friendEmail) {
+            const statusElement = document.getElementById('friendStatus');
+            if (online) {
+                statusElement.innerText = 'Online';
+                statusElement.classList.remove('text-gray-500');
+                statusElement.classList.add('text-green-600');
+            } else {
+                const formattedLastSeen = new Date(lastSeen).toLocaleString();
+                statusElement.innerText = `Last seen: ${formattedLastSeen}`;
+                statusElement.classList.remove('text-green-600');
+                statusElement.classList.add('text-gray-500');
+            }
+        }
+    }
+
+    // Add event listener for status updates
+    socket.on('friend-status', updateUserStatus);
+</script>

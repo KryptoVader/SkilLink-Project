@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer" />
+    <title>Create a Group | SkillLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #1f2937;
+            --hover-light: #e0f2fe;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-container {
+            background-color: #2f3136;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .input-field {
+            background-color: #202225 !important;
+            border-color: #202225 !important;
+            color: #dcddde !important;
+        }
+        .input-field:focus {
+            border-color: #7289da !important;
+        }
+        .radio-label {
+            transition: all 0.3s ease;
+        }
+        .radio-label:hover {
+            transform: scale(1.05);
+            color: #7289da;
+        }
+
+        .enhanced-shadow {
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 10px 30px -5px rgba(0, 0, 0, 0.2),
+                0 5px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .enhanced-shadow:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 35px 60px -15px rgba(0, 0, 0, 0.3),
+                0 20px 40px -7px rgba(0, 0, 0, 0.25),
+                0 10px 20px -5px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4">
+    <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
+        <div class="max-w-7xl mx-auto px-4 gap-5 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="logo text-[var(--primary)] text-2xl font-bold">
+                <a href="/" class="text-decoration:none">SkillLink</a>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar flex-grow mx-4 relative">
+                <form action="/search" method="GET" class="relative flex items-center">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 2a8 8 0 106.32 12.906l4.387 4.386a1 1 0 11-1.414 1.415l-4.387-4.386A8 8 0 0010 2zm0 2a6 6 0 100 12 6 6 0 000-12z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="text" name="query" id="search-input" placeholder="Search..."
+                        class="pl-10 px-3 py-1.5 border border-gray-300 rounded-full shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] w-1/2" />
+                </form>
+                <!-- Dropdown for search results -->
+                <div id="search-dropdown"
+                    class="absolute bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-3/4 hidden"></div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="nav-links flex items-center space-x-6">
+                <a href="/dashboard" id="home-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a href="/mentor" id="mentor-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
+                </a>
+                <a href="/project" id="projects-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-project-diagram mr-2"></i>Projects
+                </a>
+                <a href="/profile" id="profile-link"
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-user-circle mr-2"></i>Profile
+                </a>
+                <div class="profile flex items-center space-x-4">
+                    <a href="/profile" class="transition transform hover:scale-105">
+                        <img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full">
+                    </a>
+                    <div class="relative group">
+                        <button
+                            class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
+                        <div
+                            class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
+                            <a href="/settings"
+                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
+                            <a href="/logout"
+                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Group Creation Form -->
+    <div class="w-full max-w-xl">
+        <div class="bg-white p-8 rounded-lg enhanced-shadow border border-gray-100">
+            <h2 class="text-2xl font-bold mb-6 text-center text-[var(--primary)]">Create Your Project</h2>
+            <form action="/create-group" method="POST" class="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+                <!-- Group Name -->
+                <div>
+                    <label for="group-name" class="block text-sm font-medium text-[var(--dark)] mb-2">
+                        Group Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="group-name" name="group-name" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+                        placeholder="e.g., Awesome Developers, Design Wizards">
+                </div>
+
+                <!-- Group Category -->
+                <div>
+                    <label for="group-category" class="block text-sm font-medium text-[var(--dark)] mb-2">
+                        Group Category <span class="text-red-500">*</span>
+                    </label>
+                    <select id="group-category" name="group-category" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]">
+                        <option value="">Select a Category</option>
+                        <option value="programming">💻 Programming</option>
+                        <option value="design">🎨 Design</option>
+                        <option value="business">💼 Business</option>
+                        <option value="languages">🌐 Languages</option>
+                        <option value="science">🔬 Science</option>
+                        <option value="other">🎭 Creativity</option>
+                    </select>
+                </div>
+
+                <!-- Group Description -->
+                <div>
+                    <label for="group-description" class="block text-sm font-medium text-[var(--dark)] mb-2">
+                        Group Description <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="group-description" name="group-description" rows="4" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]"
+                        placeholder="Tell us about your community's mission and goals"></textarea>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div>
+                    <label class="block text-sm font-medium text-[var(--dark)] mb-2">
+                        Privacy Settings <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center cursor-pointer hover:bg-[var(--hover-light)] p-2 rounded-md transition">
+                            <input type="radio" id="public-group" name="privacy" value="public" required 
+                                class="mr-3 text-[var(--primary)] focus:ring-[var(--primary)]">
+                            <i class="fas fa-globe mr-2 text-green-500"></i> 
+                            Public Group
+                        </label>
+                        <label class="flex items-center cursor-pointer hover:bg-[var(--hover-light)] p-2 rounded-md transition">
+                            <input type="radio" id="private-group" name="privacy" value="private"
+                                class="mr-3 text-[var(--primary)] focus:ring-[var(--primary)]">
+                            <i class="fas fa-lock mr-2 text-red-500"></i> 
+                            Private Group
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-between items-center mt-6">
+                    <a href="/groups" class="text-gray-500 hover:text-[var(--dark)] transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                        class="px-6 py-2 bg-[var(--primary)] text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Create Group
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

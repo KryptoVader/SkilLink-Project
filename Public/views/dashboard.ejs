@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer" />
     <title>SkillLink Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -17,27 +19,138 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-row.animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
     </style>
 </head>
 
 <body class="bg-[#f3f4f6] text-gray-800">
-    <!-- Navigation Bar (Unchanged) -->
     <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/"
-                    class="text-decoration:none">SkillLink</a></div>
-            <div class="nav-links flex space-x-6">
+        <div class="max-w-7xl mx-auto px-4 gap-5 flex justify-between items-center">
+            <a href="#" onclick="toggleFriendRequests()" class="relative">
+                <i class="fas fa-envelope text-xl text-[var(--primary)] hover:text-[var(--dark)]"></i>
+                <% if (friendRequests.length> 0) { %>
+                    <span id="requestCount"
+                        class="absolute -top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        <%= friendRequests.length %>
+                    </span>
+                    <% } %>
+            </a>
+
+            <!-- Friend Requests Dropdown -->
+            <ul id="friendRequestsList"
+                class="absolute left-20 top-16 w-96 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto hidden">
+                <% if (friendRequests.length> 0) { %>
+                    <% friendRequests.forEach(req=> { %>
+                        <li
+                            class="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <img src="<%= req.avatarUrl %>" alt="<%= req.name %>"
+                                    class="w-10 h-10 rounded-full mr-4 object-cover">
+                                <div>
+                                    <span class="font-medium text-gray-800">
+                                        <%= req.name %>
+                                    </span>
+                                    <p class="text-xs text-gray-500">Wants to connect</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="handleRequest('<%= req.email %>', 'ACCEPT')"
+                                    class="bg-green-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-green-600 transition-colors flex items-center">
+                                    <i class="fas fa-check mr-1"></i>Accept
+                                </button>
+                                <button onclick="handleRequest('<%= req.email %>', 'REJECT')"
+                                    class="bg-red-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-600 transition-colors flex items-center">
+                                    <i class="fas fa-times mr-1"></i>Reject
+                                </button>
+                            </div>
+                        </li>
+                        <% }); %>
+                            <% } else { %>
+                                <li class="text-center text-gray-500 p-4">
+                                    <i class="fas fa-users-slash text-3xl mb-2 block text-gray-400"></i>
+                                    No pending friend requests
+                                </li>
+                                <% } %>
+            </ul>
+
+            <!-- Logo -->
+            <div class="logo text-[var(--primary)] text-2xl font-bold">
+                <a href="/" class="text-decoration:none">SkillLink</a>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar flex-grow mx-4 relative">
+                <form action="/search" method="GET" class="relative flex items-center">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 2a8 8 0 106.32 12.906l4.387 4.386a1 1 0 11-1.414 1.415l-4.387-4.386A8 8 0 0010 2zm0 2a6 6 0 100 12 6 6 0 000-12z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="text" name="query" id="search-input" placeholder="Search..."
+                        class="pl-10 px-3 py-1.5 border border-gray-300 rounded-full shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] w-1/2" />
+                </form>
+                <!-- Dropdown for search results -->
+                <div id="search-dropdown"
+                    class="absolute bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-3/4 hidden"></div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="nav-links flex items-center space-x-6">
                 <a href="/dashboard" id="home-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
                 <a href="/mentor" id="mentor-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentors</a>
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
+                </a>
                 <a href="/project" id="projects-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Projects</a>
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-project-diagram mr-2"></i>Projects
+                </a>
                 <a href="/profile" id="profile-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Profile</a>
+                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-user-circle mr-2"></i>Profile
+                </a>
                 <div class="profile flex items-center space-x-4">
-                    <a href="/profile" class="transition transform hover:scale-105"><img src="<%= user.avatarUrl %>"
-                            alt="User Avatar" class="w-10 h-10 rounded-full"></a>
+                    <a href="/profile" class="transition transform hover:scale-105">
+                        <img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full">
+                    </a>
                     <div class="relative group">
                         <button
                             class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
@@ -54,44 +167,53 @@
         </div>
     </nav>
 
-    <div class="flex mt-16">
-        <!-- Vertical Servers Bar -->
-        <% if (!user.role) { %>
-            <script>
-                window.onload = function () {
-                    // Prompt the user to choose between 'Student' or 'Teacher'
-                    let choice = prompt("Enter 'Student' for Student or 'Teacher' for Teacher");
+    <!-- Vertical Servers Bar -->
+    <% if (!user.role) { %>
+        <!-- Role Selection Modal -->
+        <div id="roleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-lg w-1/3 p-6">
+                <h2 class="text-xl font-bold text-gray-700 text-center mb-4">Select Your Role</h2>
+                <p class="text-gray-600 text-center mb-6">
+                    Please select your role to continue. This will help us customize your experience.
+                </p>
+                <div class="flex justify-around">
+                    <button onclick="selectRole('Student')"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        I am a Student
+                    </button>
+                    <button onclick="selectRole('Teacher')"
+                        class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
+                        I am a Teacher
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                    // Validate user input
-                    if (choice && (choice.toLowerCase() === "student" || choice.toLowerCase() === "teacher")) {
-                        let role = choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase(); // Normalize the role input
-
-                        // Send the selected role to the backend
-                        fetch('/select-role', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json' // Ensure JSON format for the request
-                            },
-                            body: JSON.stringify({ role }) // Properly stringify the role object
-                        })
-                            .then(response => {
-                                if (response.ok) {
-                                    window.location.reload(); // Reload the page to reflect the selected role
-                                } else {
-                                    alert("Failed to set your role. Please try again.");
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Error:", error);
-                                alert("An error occurred. Please try again later.");
-                            });
+        <script>
+            async function selectRole(role) {
+                try {
+                    const response = await fetch('/select-role', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ role }),
+                    });
+                    if (response.ok) {
+                        // Hide modal and reload page
+                        document.getElementById('roleModal').style.display = 'none';
+                        window.location.reload();
                     } else {
-                        alert("Invalid choice. Please refresh and enter 'Student' or 'Teacher'.");
+                        alert('Failed to set your role. Please try again.');
                     }
-                };
-            </script>
-            <% } %>
-
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                }
+            }
+        </script>
+        <% } %>
+            <div class="flex flex-col h-screen">
                 <div
                     class="absolute top-16 left-0 w-16 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] flex flex-col items-center py-3 space-y-2 overflow-y-auto">
                     <button
@@ -101,19 +223,20 @@
 
                     <!-- Groups/Servers Section -->
                     <div id="groupSection" class="w-full flex flex-col items-center space-y-2">
-                        <% if (groups.length> 0) { %>
-                            <% groups.forEach(group=> { %>
-                                <div
-                                    class="group-icon w-12 h-12 bg-gray-100 rounded-full hover:rounded-2xl transition-all cursor-pointer">
-                                    <img src="<%= group.iconUrl || '/images/default-group.png' %>"
-                                        alt="<%= group.name %>" class="w-full h-full rounded-full object-cover">
+                        <% if (groups.length > 0) { %>
+                            <% groups.forEach(group => { %>
+                                <div class="group-icon w-12 h-12 bg-gray-100 rounded-full hover:rounded-2xl transition-all cursor-pointer">
+                                    <img src="<%= group.iconUrl || '/images/default-group.jpeg' %>"
+                                         alt="<%= group.name %>" 
+                                         class="w-full h-full rounded-full object-cover">
                                 </div>
-                                <% }); %>
-                                    <% } else { %>
-                                        <button
-                                            class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white"
-                                            onclick="window.location.href='/project'"></button>
-                                        <% } %>
+                            <% }); %>
+                        <% } %>
+                        <!-- The + button is now always outside of the conditional block -->
+                        <button
+                            class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white"
+                            onclick="window.location.href='/project'">
+                        </button>
                     </div>
                 </div>
 
@@ -131,45 +254,44 @@
                                     d="M3 5v-.75C3 3.56 3.56 3 4.25 3s1.24.56 1.33 1.25C6.12 8.65 9.46 12 13 12h1a8 8 0 0 1 8 8 2 2 0 0 1-2 2 .21.21 0 0 1-.2-.15 7.65 7.65 0 0 0-1.32-2.3c-.15-.2-.42-.06-.39.17l.25 2c.02.15-.1.28-.25.28H9a2 2 0 0 1-2-2v-2.22c0-1.57-.67-3.05-1.53-4.37A15.85 15.85 0 0 1 3 5Z"
                                     class=""></path>
                             </svg>
-                            <span>Friends</span>
+                            <span>Contacts</span>
                         </div>
                     </div>
                     <!-- Friends List -->
-                    <div id="friendSection" class="px-2 overflow-y-auto h-[calc(100vh-200px)]">
+                    <div id="friendSection">
                         <% if (friends.length> 0) { %>
                             <% friends.forEach(friend=> { %>
-                                <div
-                                    class="friend-item flex items-center p-2 hover:bg-gray-100 rounded-md cursor-pointer">
-                                    <div class="relative mr-3">
-                                        <img src="<%= friend.avatarUrl || '/images/default-avatar.png' %>"
-                                            alt="<%= friend.name %>" class="w-8 h-8 rounded-full">
-                                        <div
-                                            class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white bg-green-500">
-                                        </div>
+                                <div class="friend-item flex items-center p-2 hover:bg-gray-100 rounded-md cursor-pointer 
+    <%= selectedFriend === friend.email ? 'bg-gray-200' : '' %>" data-id="<%= friend.email %>"
+                                    onclick="loadDirectMessages('<%= friend.email %>')">
+                                    <div class="relative">
+                                        <img src="<%= friend.avatarUrl %>" alt="<%= friend.name %>"
+                                            class="w-8 h-8 rounded-full mr-3">
+                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full 
+            <%= friend.online ? 'bg-green-500' : 'bg-gray-400' %> border-2 border-white"></span>
                                     </div>
-                                    <span class="text-sm">
+                                    <span>
                                         <%= friend.name %>
                                     </span>
                                 </div>
                                 <% }); %>
                                     <% } else { %>
-                                        <div class="flex flex-col items-center justify-center">
-                                            <p style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">No
-                                                Friends Found</p>
-                                        </div>
+                                        <p class="text-gray-500 text-sm">No Contacts found</p>
                                         <% } %>
                     </div>
                 </div>
 
                 <!-- Main Content -->
-                <div class="flex-1 ml-[300px] bg-blue-200">
+                <div class="flex-1 ml-[300px] mt-16 h-[calc(100vh-4rem)] flex flex-col overflow-y-auto">
                     <div class="w-full bg-white p-6 border-b border-gray-300 flex justify-between items-center">
                         <h2 class="text-2xl font-bold mb-4 text-[#2563eb]">Welcome, <%= user.name %>!</h2>
                         <div class="flex items-center space-x-3">
-                            <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+                            <button onclick="window.location.href= '/groups'"
+                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
                                 <i class="fas fa-plus mr-2"></i>Create Project
                             </button>
-                            <button class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
+                            <button onclick="window.location.href='/recommendations-page'"
+                                class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
                                 <i class="fas fa-handshake mr-2"></i>Find Collaborators
                             </button>
                         </div>
@@ -259,13 +381,17 @@
 
                     <section id="discordChat" class="bg-white rounded-lg shadow-lg p-4 my-6">
                         <div class="flex">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 text-blue-500 hover:text-green-500 transform hover:scale-110 transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                class="w-12 h-12 text-blue-500 hover:text-green-500 transform hover:scale-110 transition-all duration-300">
                                 <circle cx="12" cy="12" r="10" class="fill-current opacity-20" />
-                                <path d="M12 4a8 8 0 00-8 8c0 2 .7 3.9 1.9 5.4l1.4-1.4A5.98 5.98 0 016 12a6 6 0 0112 0c0 1.6-.6 3-1.6 4l1.5 1.5A8 8 0 0012 4z" class="fill-current"/>
-                                <path d="M15.5 12a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" class="fill-current opacity-80"/>
-                                <circle cx="12" cy="12" r="2" class="fill-current text-white opacity-100"/>
-                              </svg>
-                            <h2 class="text-xl font-bold mb-4 text-[var(--primary)] relative top-2">Tech Innovations Lounge</h2>
+                                <path
+                                    d="M12 4a8 8 0 00-8 8c0 2 .7 3.9 1.9 5.4l1.4-1.4A5.98 5.98 0 016 12a6 6 0 0112 0c0 1.6-.6 3-1.6 4l1.5 1.5A8 8 0 0012 4z"
+                                    class="fill-current" />
+                                <path d="M15.5 12a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" class="fill-current opacity-80" />
+                                <circle cx="12" cy="12" r="2" class="fill-current text-white opacity-100" />
+                            </svg>
+                            <h2 class="text-xl font-bold mb-4 text-[var(--primary)] relative top-2">Tech Innovations
+                                Lounge</h2>
                         </div>
                         <!-- Chat Messages -->
                         <div class="flex-1 overflow-y-auto p-4 bg-gray-300 space-y-4" id="chatMessages">
@@ -356,7 +482,7 @@
                             </div>
                         </div>
 
-                        <!-- Message Input -->
+                        <!-- Message Input in dashboard-->
                         <div class="bg-white border-t p-4">
                             <div class="flex items-center space-x-2">
                                 <button class="text-gray-500 hover:text-gray-700">
@@ -377,10 +503,292 @@
                         </div>
                 </div>
                 </section>
-    </div>
-    </div>
-    </div>
-    </div>
+            </div>
+            </div>
+            </div>
+            </div>
+
+            <script>
+                document.getElementById('search-input').addEventListener('input', async function () {
+                    const query = this.value.trim();
+                    const dropdown = document.getElementById('search-dropdown');
+
+                    if (!query) {
+                        dropdown.innerHTML = '';
+                        dropdown.style.display = 'none';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+                        const users = await response.json();
+
+                        dropdown.innerHTML = users.map(user => `
+            <a href="${user.profileUrl}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                <img src="${user.avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full mr-3">
+                <span>${user.name} (${user.email})</span>
+            </a>
+        `).join('');
+
+                        dropdown.style.display = 'block';
+                    } catch (error) {
+                        console.error('Error fetching search results:', error);
+                        dropdown.innerHTML = '<p class="px-4 py-2 text-sm text-red-500">Failed to load results</p>';
+                        dropdown.style.display = 'block';
+                    }
+                });
+
+                function toggleFriendRequests() {
+                    const dropdown = document.getElementById('friendRequestsList');
+                    const envelopeIcon = document.querySelector('a[onclick="toggleFriendRequests()"] i');
+
+                    // Toggle visibility of dropdown
+                    dropdown.classList.toggle('hidden');
+
+                    // Change the envelope icon to an opened envelope when the dropdown is visible
+                    if (dropdown.classList.contains('hidden')) {
+                        envelopeIcon.classList.remove('fa-envelope-open');
+                        envelopeIcon.classList.add('fa-envelope');
+                    } else {
+                        envelopeIcon.classList.remove('fa-envelope');
+                        envelopeIcon.classList.add('fa-envelope-open');
+                    }
+                }
+
+                document.addEventListener('click', function (event) {
+                    const dropdown = document.getElementById('friendRequestsList');
+                    const envelopeIcon = event.target.closest('a[onclick="toggleFriendRequests()"]');
+
+                    if (!dropdown.contains(event.target) && !envelopeIcon) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+
+                async function updateDashboard() {
+                    try {
+                        // Fetch updated friend requests
+                        const friendRequestsResponse = await fetch("/friend-requests");
+                        const friendRequests = await friendRequestsResponse.json();
+
+                        // Update the UI with the new data
+                        const friendRequestsList = document.getElementById("friendRequestsList");
+                        friendRequestsList.innerHTML = friendRequests.map(req => `
+            <li class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="${req.avatarUrl}" alt="${req.name}" class="w-8 h-8 rounded-full mr-3">
+                    <span>${req.name}</span>
+                </div>
+                <div class="space-x-2">
+                    <button onclick="handleRequest('${req.email}', 'ACCEPT')" class="bg-green-500 text-white px-2 py-1 rounded-md">Accept</button>
+                    <button onclick="handleRequest('${req.email}', 'REJECT')" class="bg-red-500 text-white px-2 py-1 rounded-md">Reject</button>
+                </div>
+            </li>
+        `).join("");
+
+                        // Update request count and visibility
+                        const requestCount = document.getElementById("requestCount");
+                        requestCount.textContent = friendRequests.length;
+
+                        // Toggle visibility based on the number of requests
+                        if (friendRequests.length > 0) {
+                            requestCount.classList.remove("hidden");
+                        } else {
+                            requestCount.classList.add("hidden");
+                        }
+
+                        // Toggle the envelope icon if the dropdown is visible
+                        const dropdown = document.getElementById('friendRequestsList');
+                        const envelopeIcon = document.querySelector('a[onclick="toggleFriendRequests()"] i');
+                        if (!dropdown.classList.contains('hidden')) {
+                            envelopeIcon.classList.remove('fa-envelope');
+                            envelopeIcon.classList.add('fa-envelope-open');
+                        } else {
+                            envelopeIcon.classList.remove('fa-envelope-open');
+                            envelopeIcon.classList.add('fa-envelope');
+                        }
+
+                    } catch (error) {
+                        console.error("Error updating dashboard:", error);
+                    }
+                }
+
+                async function handleRequest(email, action) {
+                    try {
+                        const response = await fetch("/handle-request", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ requesterEmail: email, action }),
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            alert(`Request ${action.toLowerCase()}ed successfully!`);
+                            updateDashboard(); // Ensure this function is defined
+                        } else {
+                            alert(`Error: ${result.message}`);
+                        }
+                    } catch (error) {
+                        console.error("Error handling request:", error);
+                        alert("An error occurred. Please try again later.");
+                    }
+                }
+
+                let selectedFriend = null;
+                async function loadDirectMessages(friendEmail) {
+                    const mainContent = document.querySelector('.flex-1');
+                    mainContent.innerHTML = `
+        <div class="flex justify-center items-center h-full">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+        </div>
+    `; // Loading spinner
+
+                    try {
+                        // Fetch initial messages and render the chat
+                        const response = await fetch(`/messages/${friendEmail}`);
+                        if (!response.ok) throw new Error('Failed to load messages');
+
+                        const html = await response.text();
+                        mainContent.innerHTML = html;
+
+                        // Highlight the selected friend
+                        document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('bg-gray-200'));
+                        document.querySelector(`[data-id="${friendEmail}"]`)?.classList.add('bg-gray-200');
+
+                        // Join a unique Socket.IO room for real-time updates with this friend
+                        socket.emit('join-room', { friendEmail });
+                    } catch (error) {
+                        console.error('Error loading messages:', error);
+                        mainContent.innerHTML = '<p>Error loading messages. Please try again later.</p>';
+                    }
+                }
+
+                async function sendMessage(event, friendEmail) {
+                    event.preventDefault(); // Prevent page reload
+                    const messageInput = document.getElementById('messageInput');
+                    const message = messageInput.value.trim();
+
+                    if (!message) return;
+
+                    const chatBox = document.getElementById('chatBox'); // Correctly target the chat container
+                    const timestamp = new Date();
+
+                    // Optimistically add the message to the chat UI
+                    const newMessageHTML = `
+        <div class="flex items-start space-x-3 mb-4">
+            <img src="<%= user.avatarUrl %>" alt="<%= user.name %>" class="w-10 h-10 rounded-full">
+            <div>
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-blue-600"><%= user.name %></span>
+                    <span class="text-xs text-gray-500">${timestamp.toLocaleTimeString()}</span>
+                </div>
+                <div class="bg-white rounded-lg p-3 shadow-sm">${message}</div>
+            </div>
+        </div>
+    `;
+                    chatBox.insertAdjacentHTML('beforeend', newMessageHTML); // Append message properly
+
+                    // Scroll to the bottom
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    // Clear the input field
+                    messageInput.value = '';
+
+                    // Send the message to the server
+                    try {
+                        const response = await fetch('/send-message', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ friendId: friendEmail, message }),
+                        });
+
+                        if (!response.ok) {
+                            console.error('Error sending message:', await response.text());
+                            alert('Failed to send the message. Please try again.');
+
+                            // Optionally, remove the optimistic message if the server fails
+                            chatBox.lastElementChild.remove();
+                        }
+                    } catch (error) {
+                        console.error('Error sending message:', error);
+                        alert('An error occurred. Please try again later.');
+
+                        // Optionally, remove the optimistic message if an error occurs
+                        chatBox.lastElementChild.remove();
+                    }
+                }
+
+                async function removeFriend(friendEmail) {
+                    if (!confirm("Are you sure you want to remove this friend?")) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/remove-friend', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ friendEmail }),
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            alert("Friend removed successfully.");
+                            // Reload or redirect to dashboard
+                            window.location.href = '/dashboard';
+                        } else {
+                            alert("Failed to remove friend: " + result.message);
+                        }
+                    } catch (error) {
+                        console.error("Error removing friend:", error);
+                        alert("An error occurred while removing the friend.");
+                    }
+                }
+
+                const socket = io();
+
+                // Notify server when the user goes online
+                socket.emit("user-online", "<%= user.email %>");
+
+                // Update friend status in the sidebar
+                socket.on("friend-status", (data) => {
+                    const { email, online, lastSeen } = data;
+                    const friendItem = document.querySelector(`[data-id="${email}"]`);
+                    if (friendItem) {
+                        const statusIndicator = friendItem.querySelector('span.bg-gray-400, span.bg-green-500');
+                        if (statusIndicator) {
+                            statusIndicator.classList.remove('bg-gray-400', 'bg-green-500');
+                            statusIndicator.classList.add(online ? 'bg-green-500' : 'bg-gray-400');
+                        }
+
+                        // Update last seen tooltip if offline
+                        if (!online) {
+                            friendItem.setAttribute("title", `Last seen: ${new Date(lastSeen).toLocaleString()}`);
+                        }
+                    }
+
+                    const customEvent = new CustomEvent('update-sub-navbar', { detail: { email, online, lastSeen } });
+                    window.dispatchEvent(customEvent);
+                });
+
+                // Emit a 'typing' event when the user starts typing
+                document.getElementById('messageInput').addEventListener('input', () => {
+                    socket.emit('typing', { recipient: friendEmail });
+                });
+
+                // Listen for 'typing' events
+                socket.on('user-typing', (data) => {
+                    const typingIndicator = document.getElementById('typingIndicator');
+                    if (data.sender === friendEmail) {
+                        typingIndicator.innerText = `${data.senderName} is typing...`;
+                        typingIndicator.style.display = 'block';
+                        setTimeout(() => typingIndicator.style.display = 'none', 3000);
+                    }
+                });
+
+            </script>
 </body>
 
 </html>

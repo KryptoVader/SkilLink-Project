@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillLink | Recommendations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark-gray: #1f2937;
+            --soft-background: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-[var(--soft-background)] font-sans">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div class="text-[var(--primary)] text-2xl font-bold">
+                <a href="/" class="no-underline">SkillLink</a>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="flex items-center space-x-6">
+                <a href="/dashboard" class="text-gray-700 hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a href="/mentor" class="text-gray-700 hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
+                </a>
+                <a href="/project" class="text-gray-700 hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-project-diagram mr-2"></i>Projects
+                </a>
+                <a href="/profile" class="text-gray-700 hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                    <i class="fas fa-user-circle mr-2"></i>Profile
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-24 px-4">
+        <h1 class="text-2xl font-bold text-center my-6">Find Collaborators</h1>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="text-center text-gray-500 mb-6">
+            Loading recommendations...
+        </div>
+
+        <!-- Recommendations Grid -->
+        <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <!-- Skeleton Loaders -->
+            <div class="animate-pulse bg-gray-200 rounded-lg shadow-md p-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-pulse bg-gray-200 rounded-lg shadow-md p-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="animate-pulse bg-gray-200 rounded-lg shadow-md p-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const recommendationsList = document.getElementById("recommendations-list");
+        const loadingIndicator = document.getElementById("loading-indicator");
+
+        // Fetch Recommendations
+        fetch("/recommendations")
+            .then(response => response.json())
+            .then(data => {
+                loadingIndicator.style.display = "none"; // Hide loading indicator
+                recommendationsList.innerHTML = ""; // Clear skeletons
+
+                if (data.success && data.recommendations.length > 0) {
+                    data.recommendations.forEach(rec => {
+                        const card = document.createElement("div");
+                        card.className = "bg-white p-5 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out";
+
+                        card.innerHTML = `
+                            <div class="flex items-center space-x-4 mb-4">
+                                <img 
+                                    src="${rec.avatarUrl || '/images/default-avatar.png'}" 
+                                    alt="${rec.name}'s avatar" 
+                                    class="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
+                                    loading="lazy"
+                                >
+                                <div>
+                                    <h2 class="text-lg font-bold text-gray-800">${rec.name}</h2>
+                                    <p class="text-sm text-gray-500">${rec.email}</p>
+                                </div>
+                            </div>
+                            <div class="border-t pt-3">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700 mb-1">
+                                            Skills: ${rec.skills && rec.skills.length ? rec.skills.slice(0, 3).join(", ") : "Not specified"}
+                                        </p>
+                                        <p class="text-sm text-gray-500 mb-1">
+                                            CGPA: ${rec.cgpa ? rec.cgpa.toFixed(2) : "N/A"}
+                                        </p>
+                                        <p class="text-sm font-semibold text-blue-600">
+                                            Match Rate: ${(rec.Similarity * 100).toFixed(2)}%
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        recommendationsList.appendChild(card);
+                    });
+                } else {
+                    recommendationsList.innerHTML = `
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-gray-600 text-lg">No recommendations found.</p>
+                            <p class="text-gray-500 text-sm mt-2">Try updating your profile or skills.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching recommendations:", err);
+                loadingIndicator.style.display = "none";
+                recommendationsList.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <p class="text-red-500 text-lg">Failed to load recommendations</p>
+                        <p class="text-gray-500 text-sm mt-2">Please check your internet connection and try again.</p>
+                    </div>
+                `;
+            });
+    </script>
+</body>
+</html>

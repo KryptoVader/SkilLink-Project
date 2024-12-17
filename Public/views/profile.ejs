@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,28 +13,53 @@
             --dark: #1f2937;
             --hover-light: #e0f2fe;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Navigation Bar (LinkedIn-inspired) -->
-    <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
+
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation Bar -->
+    <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="logo text-[var(--primary)] text-2xl font-bold"><a href="/" class="text-decoration:none">SkillLink</a></div>
-            <div class="nav-links flex space-x-6">
-                <a href="/dashboard" id="home-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Home</a>
-                <a href="/mentor" id="mentor-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)]  px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Mentors</a>
-                <a href="/project" id="projects-link" class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">Projects</a>
+            <div class="logo text-[var(--primary)] text-2xl font-bold tracking-tight"><a href="/"
+                    class="hover:text-blue-700 transition-colors">SkillLink</a></div>
+            <div class="nav-links flex space-x-6 items-center">
+                <a href="/dashboard"
+                    class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-blue-50 font-medium flex items-center">
+                    <i class="fas fa-home mr-2 opacity-70"></i>Home
+                </a>
+                <a href="/mentor"
+                    class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-blue-50 font-medium flex items-center">
+                    <i class="fas fa-chalkboard-teacher mr-2 opacity-70"></i>Mentors
+                </a>
+                <a href="/project"
+                    class="nav-link text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-blue-50 font-medium flex items-center">
+                    <i class="fas fa-project-diagram mr-2 opacity-70"></i>Projects
+                </a>
                 <div class="profile flex items-center space-x-4">
-                    <a href="/profile" class="transition transform hover:scale-105"><img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full"></a>
+                    <a href="/profile" class="transition-transform transform hover:scale-110 hover:shadow-lg">
+                        <img src="<%= user.avatarUrl %>" alt="User Avatar"
+                            class="w-10 h-10 rounded-full ring-2 ring-blue-100 object-cover">
+                    </a>
                     <div class="relative group">
-                        <button class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
-                        <div class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
-                            <a href="/settings" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
-                            <a href="/logout" class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                        <button
+                            class="text-gray-600 hover:text-blue-600 transition-colors font-medium flex items-center">
+                            Account
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-gray-400" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div
+                            class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-lg py-2 group-focus-within:block">
+                            <a href="/settings"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Settings</a>
+                            <a href="/logout"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Logout</a>
                         </div>
                     </div>
                 </div>
@@ -43,173 +69,161 @@
 
     <!-- Profile Edit Container -->
     <div class="container mx-auto px-4 pt-24 max-w-4xl">
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             <!-- Profile Header -->
-            <div class="relative h-48 bg-gradient-to-r from-blue-500 to-blue-700">
-                <!-- Editable Banner Section -->
-                <label 
-                    for="bannerPicture" 
-                    class="absolute bottom-5 right-4 bg-white p-2 rounded-full shadow-md cursor-pointer transition duration-300 hover:bg-gray-400 hover:scale-105"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232a3 3 0 114.242 4.242L7.5 21H3v-4.5L15.232 5.232z" />
-                    </svg>
-                    <input 
-                        type="file" 
-                        id="bannerPicture" 
-                        name="bannerPicture" 
-                        class="hidden"
-                    >
-                </label>
-            
-                <!-- Profile Section -->
-                <div class="absolute bottom-0 left-6 transform translate-y-1/2 flex items-center">
-                    <!-- Profile Picture -->
-                    <div class="relative bottom-20">
-                        <img 
-                            src="<%= user.avatarUrl %>" 
-                            alt="Profile Picture" 
-                            class="w-36 h-36 rounded-full border-4 border-white object-cover shadow-lg"
+            <div class="relative h-48">
+                <% if (user.bannerUrl) { %>
+                    <img src="<%= user.bannerUrl %>" alt="Banner"
+                        class="absolute inset-0 w-full h-full object-cover filter brightness-90">
+                <% } else { %>
+                    <div class="h-48 bg-gradient-to-r from-blue-500 to-blue-700 opacity-90"></div>
+                <% } %>
+                <div class="absolute bottom-5 right-4 flex items-center justify-center">
+                    <label 
+                    class="absolute right-0 bottom-5 bg-white p-2 rounded-full shadow-md cursor-pointer transition duration-300 hover:bg-gray-400 hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232a3 3 0 114.242 4.242L7.5 21H3v-4.5L15.232 5.232z" />
+                        </svg>
+                        <input 
+                            type="file" 
+                            id="bannerPicture" 
+                            name="bannerPicture" 
+                            class="hidden"
                         >
-                        <label 
-                            for="profilePicture" 
-                            class="absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer shadow-md transition duration-300 hover:bg-gray-400 hover:scale-105"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <input 
-                                type="file" 
-                                id="profilePicture" 
-                                name="profilePicture" 
-                                class="hidden bg-gray-400"
-                            >
-                        </label>
-                    </div>
+                    </label>                
                 </div>
             </div>
+        </div>
             
+            
+            <!-- Profile Picture Section -->
+            <div class="relative -top-16 flex justify-start items-end pl-3">
+                <div class="relative">
+                    <img src="<%= user.avatarUrl %>" alt="Profile Picture"
+                        class="w-36 h-36 rounded-full border-4 border-white object-cover shadow-lg ring-4 ring-blue-100">
+                    <label for="profilePicture"
+                        class="absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer shadow-md transition-all duration-300 hover:bg-blue-50 hover:shadow-lg hover:scale-110">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <input type="file" id="profilePicture" name="profilePicture" class="hidden" accept="image/*">
+                    </label>
+                </div>
+            </div>
+
             <!-- Profile Edit Form -->
-            <form action="/profile/update" method="POST" class="p-6">
+            <form action="/profile/update" method="POST" class="p-6" enctype="multipart/form-data">
                 <!-- Basic Information -->
                 <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">Basic Information</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Basic Information</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" name="role" value="<%= user.role %>">
                         <div>
-                            <label class="block text-gray-700 font-medium mb-2">User Name</label>
-                            <input type="text" name="name" value="<%= user.name %>" 
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-gray-700 font-medium mb-2">Name</label>
+                            <input type="text" name="name" value="<%= user.name %>"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
                         </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-gray-700 font-medium mb-2">Headline</label>
-                            <input type="text" name="headline" value="<%= user.currentRole %>" 
-                                   placeholder="Ex: Software Engineer at SkillLink | ML Researcher"
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contact Information -->
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">Contact</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Email</label>
-                            <input type="email" name="email" value="<%= user.email %>" 
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-2">Phone</label>
-                            <input type="tel" name="phone" value="<%= user.phone %>" 
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="email" name="email" value="<%= user.email %>"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                                readonly>
                         </div>
                     </div>
                 </div>
 
-                <!-- User Type Specific Information -->
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">
-                        Professional Information
-                    </h2>
-                    <!-- Student Specific Fields -->
-                    <div id="studentFields" class="<%= user.role === 'student' ? '' : 'hidden' %>">
+                <!-- Role-Specific Information -->
+                <% if (user.role==='Student' ) { %>
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Student Information</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">University</label>
-                                <input type="text" name="university" value="<%= user.university %>" 
-                                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" name="university" value="<%= user.university %>"
+                                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-2">CGPA</label>
-                                <input type="number" name="cgpa" value="<%= user.cgpa %>" step="0.01" min="0" max="10.0"
-                                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="number" name="cgpa" value="<%= user.cgpa %>" step="0.01"
+                                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
                         <div class="mt-4">
                             <label class="block text-gray-700 font-medium mb-2">Skills</label>
-                            <input type="text" name="skills" value="<%= user.skills ? user.skills.join(', ') : '' %>" 
-                                   placeholder="Enter skills separated by commas"
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-
-                    <!-- Teacher Specific Fields -->
-                    <div id="teacherFields" class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">Institution</label>
-                                <input type="text" name="institution" value="<%= user.institution %>" 
-                                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">Highest Degree</label>
-                                <input type="text" name="highestDegree" value="<%= user.highestDegree %>" 
-                                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
+                            <input type="text" name="skills"
+                                placeholder="Please enter the values separated by commas (e.g., value1, value2, value3)."
+                                value="<%= user.skills ? user.skills.join(', ') : '' %>"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div class="mt-4">
-                            <label class="block text-gray-700 font-medium mb-2">Research Interests</label>
-                            <input type="text" name="researchInterests" value="<%= user.researchInterests %>" 
-                                   placeholder="Enter research interests separated by commas"
-                                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-gray-700 font-medium mb-2">Field of Interest</label>
+                            <input type="text" name="fieldOfInterest"
+                                placeholder="Please enter the values separated by commas (e.g., value1, value2, value3)."
+                                value="<%= user.fieldOfInterest %>"
+                                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
-                </div>
-
-                <!-- Role Change Section -->
-                <hr class="my-6 border-gray-300">
-                <div class="text-center">
-                    <div class="<%= user.role === 'student' ? '' : 'hidden' %>">
-                        <h3 class="text-lg font-semibold mb-4">Not a student?</h3>
-                    </div>
-
-                    <div class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
-                        <h3 class="text-lg font-semibold mb-4">Not a teacher?</h3>
-                    </div>
-                    <div class="space-x-4">
-                        <div class="<%= user.role === 'teacher' ? '' : 'hidden' %>">
-                            <button type="button" onclick="updateRole('Student')" 
-                                    class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
-                                Set as Student
-                            </button>
+                    <% } else if (user.role==='Teacher' ) { %>
+                        <div class="mb-6">
+                            <h2 class="text-xl font-semibold mb-4">Teacher Information</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2">Institution</label>
+                                    <input type="text" name="institution" value="<%= user.institution %>"
+                                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2">Highest Degree</label>
+                                    <input type="text" name="highestDegree" value="<%= user.highestDegree %>"
+                                        class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-gray-700 font-medium mb-2">Research Interests</label>
+                                <input type="text" name="researchInterests"
+                                    value="<%= user.researchInterests ? user.researchInterests.join(', ') : '' %>"
+                                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
                         </div>
-                        <div class="<%= user.role === 'student' ? '' : 'hidden' %>">
-                            <button type="button" onclick="updateRole('Teacher')" 
-                                    class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
-                                Set as Teacher
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                        <% } %>
 
-                <!-- Submit Button -->
-                <div class="text-right mt-4">
-                    <button type="submit" 
-                            class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-300">
-                        Save Changes
-                    </button>
-                </div>
+                            <!-- Role Change Section -->
+                            <hr class="my-6 border-gray-300">
+                            <div class="text-center">
+                                <div class="<%= user.role === 'Student' ? '' : 'hidden' %>">
+                                    <h3 class="text-lg font-semibold mb-4">Not a student?</h3>
+                                </div>
+
+                                <div class="<%= user.role === 'Teacher' ? '' : 'hidden' %>">
+                                    <h3 class="text-lg font-semibold mb-4">Not a teacher?</h3>
+                                </div>
+                                <div class="space-x-4">
+                                    <div class="<%= user.role === 'Teacher' ? '' : 'hidden' %>">
+                                        <button type="button" onclick="updateRole('Student')"
+                                            class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+                                            Set as Student
+                                        </button>
+                                    </div>
+                                    <div class="<%= user.role === 'Student' ? '' : 'hidden' %>">
+                                        <button type="button" onclick="updateRole('Teacher')"
+                                            class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
+                                            Set as Teacher
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-right mt-4">
+                                <button type="submit"
+                                    class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-300">
+                                    Save Changes
+                                </button>
+                            </div>
             </form>
         </div>
     </div>
@@ -224,18 +238,19 @@
                 },
                 body: JSON.stringify({ newRole })
             })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload(); // Reload the page to apply the updated role
-                } else {
-                    alert("Failed to update your role. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred. Please try again later.");
-            });
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Reload the page to apply the updated role
+                    } else {
+                        alert("Failed to update your role. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred. Please try again later.");
+                });
         }
     </script>
 </body>
+
 </html>
