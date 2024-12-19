@@ -807,7 +807,7 @@ app.post("/connect", async (req, res) => {
     const session = driver.session();
 
     try {
-        await session.run(
+        const result = await session.run(
             `MATCH (u1:User {email: $currentUserEmail}), (u2:User {email: $targetEmail})
              MERGE (u1)-[r:FRIEND_REQUEST]->(u2)
              ON CREATE SET r.status = "PENDING", r.timestamp = timestamp()
@@ -827,6 +827,7 @@ app.post("/connect", async (req, res) => {
         await session.close();
     }
 });
+
 
 app.get("/friend-requests", async (req, res) => {
     const session = driver.session();
@@ -1582,7 +1583,7 @@ app.get('/group/:id/view', async (req, res) => {
         }
 
         console.log(members);
-        
+
         // Render the EJS partial
         res.render('partials/group', { group, channels, members, owner });
     } catch (error) {
