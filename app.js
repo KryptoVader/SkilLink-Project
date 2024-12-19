@@ -280,29 +280,15 @@ app.get("/dashboard", async (req, res) => {
 
         const userEmail = req.session.user.email;
 
-        // Fetch friend requests
-        const friendRequestsResult = await session.run(`
-            MATCH (u:User {email: $userEmail})<-[:FRIEND_REQUEST {status: "PENDING"}]-(requester:User)
-            RETURN requester.email AS email, requester.name AS name, requester.avatarUrl AS avatarUrl
-        `, { userEmail });
-
-        const friendRequests = friendRequestsResult.records.map(record => ({
-            email: record.get("email"),
-            name: record.get("name"),
-            avatarUrl: record.get("avatarUrl") || "/images/download.png",
-        }));
-
         // Fetch friends list
         const friendsResult = await session.run(`
-    MATCH (u1:User {email: $userEmail})-[:FRIEND_WITH]-(friend:User)
-    RETURN friend.email AS email, friend.name AS name, friend.avatarUrl AS avatarUrl, friend.lastSeen AS lastSeen
-`, { userEmail });
+            MATCH (u1:User {email: $userEmail})-[:FRIEND_WITH]-(friend:User)
+            RETURN friend.email AS email, friend.name AS name, friend.avatarUrl AS avatarUrl, friend.lastSeen AS lastSeen
+        `, { userEmail });
 
         const friends = friendsResult.records.map(record => {
             const email = record.get("email");
             const lastSeenRaw = record.get("lastSeen"); // Can be null or undefined
-
-            console.log("Raw lastSeen value:", lastSeenRaw);
 
             // Fallback for lastSeen
             const lastSeen = lastSeenRaw
@@ -333,11 +319,10 @@ app.get("/dashboard", async (req, res) => {
             name: record.get("name"),
             iconUrl: record.get("iconUrl") || "/images/default-group.jpeg", // Default icon
         }));
-        
+
         // Render the dashboard
         res.render("dashboard", {
             user: req.session.user,
-            friendRequests,
             friends,
             groups,
             selectedFriend: null,
@@ -822,13 +807,11 @@ app.post("/connect", async (req, res) => {
     const session = driver.session();
 
     try {
-        const result = await session.run(
-            `
-            MATCH (u1:User {email: $currentUserEmail}), (u2:User {email: $targetEmail})
-            MERGE (u1)-[r:FRIEND_REQUEST]->(u2)
-            ON CREATE SET r.status = "PENDING", r.timestamp = timestamp()
-            RETURN r
-            `,
+        await session.run(
+            `MATCH (u1:User {email: $currentUserEmail}), (u2:User {email: $targetEmail})
+             MERGE (u1)-[r:FRIEND_REQUEST]->(u2)
+             ON CREATE SET r.status = "PENDING", r.timestamp = timestamp()
+             RETURN r`,
             { currentUserEmail, targetEmail }
         );
 
@@ -846,32 +829,29 @@ app.post("/connect", async (req, res) => {
 });
 
 app.get("/friend-requests", async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-
-    const userEmail = req.session.user.email;
     const session = driver.session();
-
     try {
-        const result = await session.run(
-            `
-            MATCH (u:User {email: $userEmail})<-[:FRIEND_REQUEST {status: "PENDING"}]-(requester:User)
-            RETURN requester.email AS email, requester.name AS name, requester.avatarUrl AS avatarUrl
-            `,
+        if (!req.session.user) {
+            return res.redirect("/login");
+        }
+        const userEmail = req.session.user.email;
+
+        const friendRequestsResult = await session.run(
+            `MATCH (u:User)-[r:FRIEND_REQUEST {status: "PENDING"}]->(me:User {email: $userEmail})
+             RETURN u.name AS name, u.email AS email, u.avatarUrl AS avatarUrl`,
             { userEmail }
         );
 
-        const requests = result.records.map(record => ({
-            email: record.get("email"),
-            name: record.get("name"),
-            avatarUrl: record.get("avatarUrl") || "/images/default-avatar.png",
+        const friendRequests = friendRequestsResult.records.map(record => ({
+            name: record.get('name'),
+            email: record.get('email'),
+            avatarUrl: record.get('avatarUrl') || "/images/default-avatar.png"
         }));
 
-        res.json(requests);
+        res.json(friendRequests);
     } catch (error) {
         console.error("Error fetching friend requests:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        res.status(500).send("An error occurred.");
     } finally {
         await session.close();
     }
@@ -1373,99 +1353,61 @@ app.post("/create-group", async (req, res) => {
     }
 });
 
-app.post("/group/:id/invite", async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).send("Unauthorized. Please log in.");
-    }
-
-    const groupId = req.params.id; // Group ID from the URL
-    const { collaboratorEmail } = req.body; // Email of the invited collaborator
-    const userEmail = req.session.user.email; // Current user's email
+app.get("/group-invitations", async (req, res) => {
     const session = driver.session();
-
     try {
-        // Check if the user is the owner of the group
-        const ownerResult = await session.run(
-            `
-            MATCH (u:User {email: $userEmail})-[:OWNER_OF]->(g:Group {id: $groupId})
-            RETURN g
-            `,
-            { userEmail, groupId }
-        );
-
-        if (ownerResult.records.length === 0) {
-            return res.status(403).send("You are not the owner of this group.");
+        if (!req.session.user) {
+            return res.redirect("/login");
         }
+        const userEmail = req.session.user.email;
 
-        // Send an invitation to the collaborator
-        await session.run(
-            `
-            MATCH (g:Group {id: $groupId}), (u:User {email: $collaboratorEmail})
-            MERGE (u)-[:INVITED_TO]->(g)
-            `,
-            { groupId, collaboratorEmail }
+        // Fetch group invitations
+        const groupInvitationsResult = await session.run(
+            `MATCH (g:Group)<-[:INVITED_TO]-(u:User {email: $userEmail})
+             RETURN g.name AS groupName, g.id AS groupId`,
+            { userEmail }
         );
 
-        res.status(200).send("Invitation sent successfully.");
+        const groupInvitations = groupInvitationsResult.records.map(record => ({
+            groupName: record.get('groupName'),
+            groupId: record.get('groupId')
+        }));
+
+        res.json(groupInvitations);
     } catch (error) {
-        console.error("Error sending invite:", error);
-        res.status(500).send("Failed to send invite.");
+        console.error("Error fetching group invitations:", error);
+        res.status(500).send("An error occurred.");
     } finally {
         await session.close();
     }
 });
 
-app.post("/group/:id/join", async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).send("Unauthorized. Please log in.");
-    }
-
-    const groupId = req.params.id; // Group ID
-    const userEmail = req.session.user.email; // Collaborator's email
+app.get("/join-requests", async (req, res) => {
     const session = driver.session();
-
     try {
-        // Check group privacy settings
-        const groupResult = await session.run(
-            `
-            MATCH (g:Group {id: $groupId})
-            RETURN g.privacy AS privacy
-            `,
-            { groupId }
+        if (!req.session.user) {
+            return res.redirect("/login");
+        }
+        const userEmail = req.session.user.email;
+
+        // Fetch group join requests
+        const joinRequestsResult = await session.run(
+            `MATCH (u:User)-[:REQUESTED_TO_JOIN]->(g:Group)<-[:OWNER_OF]-(me:User {email: $userEmail})
+             RETURN u.name AS userName, u.email AS userEmail, g.name AS groupName, g.id AS groupId`,
+            { userEmail }
         );
 
-        if (groupResult.records.length === 0) {
-            return res.status(404).send("Group not found.");
-        }
+        const joinRequests = joinRequestsResult.records.map(record => ({
+            userName: record.get('userName'),
+            userEmail: record.get('userEmail'),
+            groupName: record.get('groupName'),
+            groupId: record.get('groupId')
+        }));
 
-        const privacy = groupResult.records[0].get("privacy");
-
-        if (privacy === "public") {
-            // Directly join the group
-            await session.run(
-                `
-                MATCH (u:User {email: $userEmail}), (g:Group {id: $groupId})
-                MERGE (u)-[:MEMBER_OF]->(g)
-                `,
-                { userEmail, groupId }
-            );
-
-            return res.status(200).send("Successfully joined the group.");
-        } else {
-            // Send a join request for private groups
-            await session.run(
-                `
-                MATCH (u:User {email: $userEmail}), (g:Group {id: $groupId})
-                MERGE (u)-[:REQUESTED_TO_JOIN]->(g)
-                `,
-                { userEmail, groupId }
-            );
-
-            return res.status(200).send("Join request sent. Awaiting approval.");
-        }
+        res.json(joinRequests);
     } catch (error) {
-        console.error("Error joining group:", error);
-        res.status(500).send("Failed to join group.");
+        console.error("Error fetching group join requests:", error);
+        res.status(500).send("An error occurred.");
     } finally {
         await session.close();
     }
@@ -1476,54 +1418,265 @@ app.post("/group/:id/handle-request", async (req, res) => {
         return res.status(401).send("Unauthorized. Please log in.");
     }
 
-    const { collaboratorEmail, action } = req.body; // 'accept' or 'reject'
+    const { action } = req.body; // 'accept' or 'reject'
     const groupId = req.params.id;
     const userEmail = req.session.user.email;
     const session = driver.session();
 
     try {
-        // Check if the user is the owner of the group
-        const ownerResult = await session.run(
-            `
-            MATCH (u:User {email: $userEmail})-[:OWNER_OF]->(g:Group {id: $groupId})
-            RETURN g
-            `,
-            { userEmail, groupId }
-        );
-
-        if (ownerResult.records.length === 0) {
-            return res.status(403).send("You are not the owner of this group.");
-        }
-
         if (action === "accept") {
-            // Accept the request: Add the user as a MEMBER and remove the REQUESTED_TO_JOIN relationship
+            // Add user as a member and remove the invitation
             await session.run(
                 `
-                MATCH (u:User {email: $collaboratorEmail})-[r:REQUESTED_TO_JOIN]->(g:Group {id: $groupId})
+                MATCH (u:User {email: $userEmail})-[r:INVITED_TO]->(g:Group {id: $groupId})
                 MERGE (u)-[:MEMBER_OF]->(g)
                 DELETE r
                 `,
-                { collaboratorEmail, groupId }
+                { userEmail, groupId }
             );
 
-            return res.status(200).send("Request accepted successfully.");
+            return res.status(200).send("Invitation accepted successfully.");
         } else if (action === "reject") {
-            // Reject the request: Remove the REQUESTED_TO_JOIN relationship
+            // Remove the invitation
             await session.run(
                 `
-                MATCH (u:User {email: $collaboratorEmail})-[r:REQUESTED_TO_JOIN]->(g:Group {id: $groupId})
+                MATCH (u:User {email: $userEmail})-[r:INVITED_TO]->(g:Group {id: $groupId})
                 DELETE r
                 `,
-                { collaboratorEmail, groupId }
+                { userEmail, groupId }
             );
 
-            return res.status(200).send("Request rejected successfully.");
+            return res.status(200).send("Invitation rejected successfully.");
         } else {
             return res.status(400).send("Invalid action.");
         }
     } catch (error) {
-        console.error("Error handling join request:", error);
-        res.status(500).send("Failed to handle join request.");
+        console.error("Error handling invitation:", error);
+        res.status(500).send("Failed to handle invitation.");
+    } finally {
+        await session.close();
+    }
+});
+
+app.get('/group/:id/channels', async (req, res) => {
+    const groupId = req.params.id;
+    const session = driver.session();
+
+    try {
+        const result = await session.run(
+            `MATCH (g:Group {id: $groupId})-[:HAS_CHANNEL]->(c:Channel)
+             RETURN c.id AS channelId, c.name AS channelName`,
+            { groupId }
+        );
+
+        const channels = result.records.map(record => ({
+            id: record.get('channelId'),
+            name: record.get('channelName')
+        }));
+
+        res.json({ channels });
+    } catch (error) {
+        console.error("Error fetching channels:", error);
+        res.status(500).send("Failed to fetch channels.");
+    } finally {
+        await session.close();
+    }
+});
+
+app.post('/group/:id/add-channel', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).send('Unauthorized. Please log in.');
+    }
+
+    const groupId = req.params.id; // Group ID from URL
+    const { channelName } = req.body; // Name of the channel to be added
+    const userEmail = req.session.user.email; // Logged-in user email
+    const session = driver.session();
+
+    try {
+        // Step 1: Verify if the user is the owner of the group
+        const ownerResult = await session.run(
+            `MATCH (u:User {email: $userEmail})-[:OWNER_OF]->(g:Group {id: $groupId})
+             RETURN g`,
+            { userEmail, groupId }
+        );
+
+        if (ownerResult.records.length === 0) {
+            return res.status(403).send('You are not authorized to add channels to this group.');
+        }
+
+        // Step 2: Create a new channel node and link it to the group
+        const channelId = `channel-${Date.now()}`; // Generate a unique ID for the channel
+        await session.run(
+            `MATCH (g:Group {id: $groupId})
+             CREATE (c:Channel {id: $channelId, name: $channelName})
+             MERGE (g)-[:HAS_CHANNEL]->(c)
+             RETURN c`,
+            { groupId, channelId, channelName }
+        );
+
+        res.status(200).json({ message: 'Channel added successfully', channelId, channelName });
+    } catch (error) {
+        console.error('Error adding channel:', error);
+        res.status(500).send('Failed to add channel.');
+    } finally {
+        await session.close();
+    }
+});
+
+app.get('/group/:id/view', async (req, res) => {
+    const groupId = req.params.id;
+    const session = driver.session();
+
+    try {
+        // Fetch group details
+        const groupResult = await session.run(
+            `MATCH (g:Group {id: $groupId})
+             RETURN g.name AS name, g.description AS description, g.iconUrl AS iconUrl`,
+            { groupId }
+        );
+        const group = groupResult.records[0]?.toObject();
+        if (group) {
+            group.iconUrl = group.iconUrl || '/images/default-group.jpeg'; // Use a default icon
+        }
+
+        if (!group) {
+            return res.status(404).send('Group not found');
+        }
+
+        // Fetch channels
+        const channelsResult = await session.run(
+            `MATCH (g:Group {id: $groupId})-[:HAS_CHANNEL]->(c:Channel)
+             RETURN c.id AS id, c.name AS name`,
+            { groupId }
+        );
+        const channels = channelsResult.records.map(record => ({
+            id: record.get('id'),
+            name: record.get('name'),
+        }));
+
+        // Fetch members
+        const membersResult = await session.run(
+            `MATCH (u:User)-[r]->(g:Group {id: $groupId})
+             WHERE r:MEMBER_OF OR r:OWNER_OF
+             RETURN DISTINCT 
+                COALESCE(u.googleId, u.id) AS id,  // Use googleId if it exists, otherwise fallback to id
+                u.name AS name, 
+                u.avatarUrl AS avatarUrl, 
+                u.online AS online, 
+                TYPE(r) AS role`,
+            { groupId }
+        );
+
+        const members = membersResult.records.map(record => ({
+            id: record.get('id'),
+            name: record.get('name'),
+            avatarUrl: record.get('avatarUrl') || 'images/download.png', // Provide a default avatar
+            role: record.get('role'),
+            online: onlineUsers.has(record.get('id')), // Check if the user is online
+        }));
+
+        const owner = members.find(member => member.role === 'OWNER_OF');
+        if (owner) {
+            owner.avatarUrl = owner.avatarUrl || 'images/download.png'; // Set a default avatar
+        }
+
+        console.log(members);
+        
+        // Render the EJS partial
+        res.render('partials/group', { group, channels, members, owner });
+    } catch (error) {
+        console.error('Error fetching group content:', error);
+        res.status(500).send('Failed to load group content.');
+    } finally {
+        await session.close();
+    }
+});
+
+app.post('/send-group-message', async (req, res) => {
+    const { channelId, message } = req.body;  // channelId to identify which channel the message is for
+
+    try {
+        const session = driver.session();
+
+        // Create the message node and link it to the specified channel
+        await session.run(
+            `MATCH (c:Channel {id: $channelId})
+             CREATE (m:Message {content: $message, timestamp: timestamp()})
+             MERGE (c)-[:HAS_MESSAGE]->(m)`,
+            { channelId, message }
+        );
+
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Error saving group message:', error);
+        res.status(500).send('Failed to send message.');
+    }
+});
+
+app.get('/group/:id/metadata', async (req, res) => {
+    const groupId = req.params.id;
+    const session = driver.session();
+
+    try {
+        const groupResult = await session.run(
+            `MATCH (g:Group {id: $groupId})
+             RETURN g.name AS name, g.description AS description, g.iconUrl AS iconUrl`,
+            { groupId }
+        );
+
+        if (!groupResult.records.length) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+
+        const group = groupResult.records[0].toObject();
+        group.iconUrl = group.iconUrl || '/images/default-group.jpeg'; // Default icon
+
+        res.json(group);
+    } catch (error) {
+        console.error('Error fetching group metadata:', error);
+        res.status(500).json({ error: 'Failed to fetch group metadata' });
+    } finally {
+        await session.close();
+    }
+});
+
+app.post('/group/:id/send-invitation', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).send('Unauthorized. Please log in.');
+    }
+
+    const groupId = req.params.id;
+    const { targetEmail } = req.body; // The email of the user being invited
+    const userEmail = req.session.user.email;
+    const session = driver.session();
+
+    try {
+        // Ensure the user is a member or owner of the group
+        const groupResult = await session.run(
+            `MATCH (u:User {email: $userEmail})-[:OWNER_OF|MEMBER_OF]->(g:Group {id: $groupId})
+             RETURN g`,
+            { userEmail, groupId }
+        );
+
+        if (groupResult.records.length === 0) {
+            return res.status(403).send('You are not a member or owner of this group.');
+        }
+
+        // Create the invitation relationship
+        await session.run(
+            `
+            MATCH (inviter:User {email: $userEmail}), (invitee:User {email: $targetEmail}), (g:Group {id: $groupId})
+            MERGE (invitee)-[:INVITED_TO]->(g)
+            RETURN g
+            `,
+            { userEmail, targetEmail, groupId }
+        );
+
+        res.status(200).json({ message: 'Invitation sent successfully.' });
+    } catch (error) {
+        console.error('Error sending invitation:', error);
+        res.status(500).send('Failed to send invitation.');
     } finally {
         await session.close();
     }

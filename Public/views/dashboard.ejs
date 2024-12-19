@@ -53,123 +53,142 @@
         .message-row.animate-slideIn {
             animation: slideIn 0.3s ease-out;
         }
+
+        #friendSidebar,
+        #channelSidebar {
+            position: absolute;
+            /* Makes the sidebar stack */
+            top: 0;
+            /* Align to the top */
+            left: 0;
+            /* Align to the left */
+            width: 100%;
+            /* Take full width of sidebar container */
+            height: 100%;
+            /* Full height of sidebar container */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            /* Smooth transitions */
+            z-index: 10;
+            /* Default z-index */
+            background-color: white;
+            /* Ensure background hides other elements */
+        }
+
+        #friendSidebar.hidden,
+        #channelSidebar.hidden {
+            opacity: 0;
+            /* Make the hidden sidebar transparent */
+            visibility: hidden;
+            /* Make it non-interactive */
+            z-index: -1;
+            /* Place it behind */
+        }
+
+        #friendSidebar {
+            z-index: 20;
+            /* Friend sidebar appears on top */
+        }
+
+        .group-item.selected {
+            background-color: #2563eb;
+            /* Blue background */
+            border: 2px solid #1d4ed8;
+            /* Darker blue border */
+            transform: scale(1.1);
+            /* Slightly larger */
+        }
+
+        .dropdown-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f9fafb; /* Subtle hover effect */
+        }
+
+        .dropdown-header {
+            background-color: #f3f4f6; /* Light gray */
+            font-weight: bold;
+            padding: 8px 16px;
+            border-bottom: 1px solid #e5e7eb; /* Border for separation */
+        }
     </style>
 </head>
 
 <body class="bg-[#f3f4f6] text-gray-800">
     <nav id="topNavbar" class="fixed top-0 w-full bg-white py-4 shadow-md z-50">
-        <div class="max-w-7xl mx-auto px-4 gap-5 flex justify-between items-center">
-            <a href="#" onclick="toggleFriendRequests()" class="relative">
-                <i class="fas fa-envelope text-xl text-[var(--primary)] hover:text-[var(--dark)]"></i>
-                <% if (friendRequests.length> 0) { %>
-                    <span id="requestCount"
-                        class="absolute -top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        <%= friendRequests.length %>
+        <div class="max-w-7xl mx-auto px-4 gap-5 flex justify-between items-center">                
+                <a href="#" onclick="toggleRequestsDropdown(event)" class="relative">
+                    <i class="fas fa-envelope text-xl text-[var(--primary)] hover:text-[var(--dark)]"></i>
+                    <span id="notificationBadge" 
+                        class="absolute bottom-4 left-3 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">
+                        0
                     </span>
-                    <% } %>
-            </a>
-
-            <!-- Friend Requests Dropdown -->
-            <ul id="friendRequestsList"
-                class="absolute left-20 top-16 w-96 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto hidden">
-                <% if (friendRequests.length> 0) { %>
-                    <% friendRequests.forEach(req=> { %>
-                        <li
-                            class="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 transition-colors">
-                            <div class="flex items-center">
-                                <img src="<%= req.avatarUrl %>" alt="<%= req.name %>"
-                                    class="w-10 h-10 rounded-full mr-4 object-cover">
-                                <div>
-                                    <span class="font-medium text-gray-800">
-                                        <%= req.name %>
-                                    </span>
-                                    <p class="text-xs text-gray-500">Wants to connect</p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="handleRequest('<%= req.email %>', 'ACCEPT')"
-                                    class="bg-green-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-green-600 transition-colors flex items-center">
-                                    <i class="fas fa-check mr-1"></i>Accept
-                                </button>
-                                <button onclick="handleRequest('<%= req.email %>', 'REJECT')"
-                                    class="bg-red-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-600 transition-colors flex items-center">
-                                    <i class="fas fa-times mr-1"></i>Reject
-                                </button>
-                            </div>
-                        </li>
-                        <% }); %>
-                            <% } else { %>
-                                <li class="text-center text-gray-500 p-4">
-                                    <i class="fas fa-users-slash text-3xl mb-2 block text-gray-400"></i>
-                                    No pending friend requests
-                                </li>
-                                <% } %>
-            </ul>
-
-            <!-- Logo -->
-            <div class="logo text-[var(--primary)] text-2xl font-bold">
-                <a href="/" class="text-decoration:none">SkillLink</a>
-            </div>
-
-            <!-- Search Bar -->
-            <div class="search-bar flex-grow mx-4 relative">
-                <form action="/search" method="GET" class="relative flex items-center">
-                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M10 2a8 8 0 106.32 12.906l4.387 4.386a1 1 0 11-1.414 1.415l-4.387-4.386A8 8 0 0010 2zm0 2a6 6 0 100 12 6 6 0 000-12z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <input type="text" name="query" id="search-input" placeholder="Search..."
-                        class="pl-10 px-3 py-1.5 border border-gray-300 rounded-full shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] w-1/2" />
-                </form>
-                <!-- Dropdown for search results -->
-                <div id="search-dropdown"
-                    class="absolute bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-3/4 hidden"></div>
-            </div>
-
-            <!-- Navigation Links -->
-            <div class="nav-links flex items-center space-x-6">
-                <a href="/dashboard" id="home-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
-                    <i class="fas fa-home mr-2"></i>Home
                 </a>
-                <a href="/mentor" id="mentor-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
-                    <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
-                </a>
-                <a href="/project" id="projects-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
-                    <i class="fas fa-project-diagram mr-2"></i>Projects
-                </a>
-                <a href="/profile" id="profile-link"
-                    class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
-                    <i class="fas fa-user-circle mr-2"></i>Profile
-                </a>
-                <div class="profile flex items-center space-x-4">
-                    <a href="/profile" class="transition transform hover:scale-105">
-                        <img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full">
+                <ul id="requestsDropdown" class="absolute left-18 top-16 w-96 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto hidden">
+                    <!-- Content dynamically updated via JavaScript -->
+                </ul>
+                <!-- Logo -->
+                <div class="logo text-[var(--primary)] text-2xl font-bold">
+                    <a href="/" class="text-decoration:none">SkillLink</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-bar flex-grow mx-4 relative">
+                    <form action="/search" method="GET" class="relative flex items-center">
+                        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 2a8 8 0 106.32 12.906l4.387 4.386a1 1 0 11-1.414 1.415l-4.387-4.386A8 8 0 0010 2zm0 2a6 6 0 100 12 6 6 0 000-12z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" name="query" id="search-input" placeholder="Search..."
+                            class="pl-10 px-3 py-1.5 border border-gray-300 rounded-full shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] w-1/2" />
+                    </form>
+                    <div id="search-dropdown"
+                        class="absolute bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-3/4 hidden"></div>
+                </div>
+
+                <div class="nav-links flex items-center space-x-6">
+                    <a href="/dashboard" id="home-link"
+                        class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                        <i class="fas fa-home mr-2"></i>Home
                     </a>
-                    <div class="relative group">
-                        <button
-                            class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
-                        <div
-                            class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
-                            <a href="/settings"
-                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
-                            <a href="/logout"
-                                class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                    <a href="/mentor" id="mentor-link"
+                        class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>Mentors
+                    </a>
+                    <a href="/project" id="projects-link"
+                        class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                        <i class="fas fa-project-diagram mr-2"></i>Projects
+                    </a>
+                    <a href="/profile" id="profile-link"
+                        class="nav-link text-[var(--dark)] hover:text-[var(--primary)] px-3 py-2 rounded-md transition transform hover:scale-105 font-medium">
+                        <i class="fas fa-user-circle mr-2"></i>Profile
+                    </a>
+                    <div class="profile flex items-center space-x-4">
+                        <a href="/profile" class="transition transform hover:scale-105">
+                            <img src="<%= user.avatarUrl %>" alt="User Avatar" class="w-10 h-10 rounded-full">
+                        </a>
+                        <div class="relative group">
+                            <button
+                                class="text-[var(--dark)] hover:text-[var(--primary)] transition font-medium">Account</button>
+                            <div
+                                class="absolute hidden group-hover:block right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-2 group-focus-within:block">
+                                <a href="/settings"
+                                    class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Settings</a>
+                                <a href="/logout"
+                                    class="block px-4 py-2 text-sm text-[var(--dark)] hover:text-[var(--primary)] font-medium">Logout</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
     </nav>
 
-    <!-- Vertical Servers Bar -->
     <% if (!user.role) { %>
-        <!-- Role Selection Modal -->
         <div id="roleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg shadow-lg w-1/3 p-6">
                 <h2 class="text-xl font-bold text-gray-700 text-center mb-4">Select Your Role</h2>
@@ -221,68 +240,139 @@
                         onclick="window.location.href='/dashboard'"></button>
                     <div class="w-[50px] bg-gray-400 my-2 h-[2px]"></div>
 
-                    <!-- Groups/Servers Section -->
                     <div id="groupSection" class="w-full flex flex-col items-center space-y-2">
-                        <% if (groups.length > 0) { %>
-                            <% groups.forEach(group => { %>
-                                <div class="group-icon w-12 h-12 bg-gray-100 rounded-full hover:rounded-2xl transition-all cursor-pointer">
-                                    <img src="<%= group.iconUrl || '/images/default-group.jpeg' %>"
-                                         alt="<%= group.name %>" 
-                                         class="w-full h-full rounded-full object-cover">
-                                </div>
+                        <% groups.forEach(group=> { %>
+                            <div class="group-item w-12 h-12 bg-gray-100 rounded-full hover:rounded-2xl transition-all cursor-pointer"
+                                data-group-id="<%= group.id %>" onclick="loadGroup('<%= group.id %>')">
+                                <img src="<%= group.iconUrl || '/images/default-group.jpeg' %>" alt="<%= group.name %>"
+                                    class="w-full h-full rounded-full object-cover">
+                            </div>
                             <% }); %>
-                        <% } %>
-                        <!-- The + button is now always outside of the conditional block -->
-                        <button
-                            class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white"
-                            onclick="window.location.href='/project'">
-                        </button>
+                                <button
+                                    class="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-blue-600 fas fa-plus text-white"
+                                    onclick="window.location.href='/project'">
+                                </button>
                     </div>
+
+
                 </div>
 
-                <!-- Friends/Channels Sidebar -->
-                <div
+                <!-- Sidebar Container -->
+                <div id="sidebarContainer"
                     class="absolute top-16 left-16 w-60 bg-white border-r border-gray-200 h-[calc(100vh-4rem)] text-gray-800">
-                    <!-- Friends Header -->
-                    <div class="p-3 border-b border-gray-200 flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <svg x="0" y="0" class="icon_fc4f04" aria-hidden="true" role="img"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M13 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" class=""></path>
-                                <path fill="currentColor"
-                                    d="M3 5v-.75C3 3.56 3.56 3 4.25 3s1.24.56 1.33 1.25C6.12 8.65 9.46 12 13 12h1a8 8 0 0 1 8 8 2 2 0 0 1-2 2 .21.21 0 0 1-.2-.15 7.65 7.65 0 0 0-1.32-2.3c-.15-.2-.42-.06-.39.17l.25 2c.02.15-.1.28-.25.28H9a2 2 0 0 1-2-2v-2.22c0-1.57-.67-3.05-1.53-4.37A15.85 15.85 0 0 1 3 5Z"
-                                    class=""></path>
-                            </svg>
-                            <span>Contacts</span>
+                    <!-- Friends Sidebar -->
+                    <div id="friendSidebar" class="h-full">
+                        <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <svg x="0" y="0" class="icon_fc4f04" aria-hidden="true" role="img"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M13 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" class=""></path>
+                                    <path fill="currentColor"
+                                        d="M3 5v-.75C3 3.56 3.56 3 4.25 3s1.24.56 1.33 1.25C6.12 8.65 9.46 12 13 12h1a8 8 0 0 1 8 8 2 2 0 0 1-2 2 .21.21 0 0 1-.2-.15 7.65 7.65 0 0 0-1.32-2.3c-.15-.2-.42-.06-.39.17l.25 2c.02.15-.1.28-.25.28H9a2 2 0 0 1-2-2v-2.22c0-1.57-.67-3.05-1.53-4.37A15.85 15.85 0 0 1 3 5Z"
+                                        class=""></path>
+                                </svg>
+                                <span>Contacts</span>
+                            </div>
+                        </div>
+                        <div id="friendSection">
+                            <% if (friends.length> 0) { %>
+                                <% friends.forEach(friend=> { %>
+                                    <div class="friend-item flex items-center p-2 hover:bg-gray-100 rounded-md cursor-pointer 
+<%= selectedFriend === friend.email ? 'bg-gray-200' : '' %>" data-id="<%= friend.email %>"
+                                        onclick="loadDirectMessages('<%= friend.email %>')">
+                                        <div class="relative">
+                                            <img src="<%= friend.avatarUrl %>" alt="<%= friend.name %>"
+                                                class="w-8 h-8 rounded-full mr-3">
+                                            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full 
+            <%= friend.online ? 'bg-green-500' : 'bg-gray-400' %> border-2 border-white"></span>
+                                        </div>
+                                        <span>
+                                            <%= friend.name %>
+                                        </span>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <p class="text-gray-500 text-sm">No Contacts found</p>
+                                            <% } %>
                         </div>
                     </div>
-                    <!-- Friends List -->
-                    <div id="friendSection">
-                        <% if (friends.length> 0) { %>
-                            <% friends.forEach(friend=> { %>
-                                <div class="friend-item flex items-center p-2 hover:bg-gray-100 rounded-md cursor-pointer 
-    <%= selectedFriend === friend.email ? 'bg-gray-200' : '' %>" data-id="<%= friend.email %>"
-                                    onclick="loadDirectMessages('<%= friend.email %>')">
-                                    <div class="relative">
-                                        <img src="<%= friend.avatarUrl %>" alt="<%= friend.name %>"
-                                            class="w-8 h-8 rounded-full mr-3">
-                                        <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full 
-            <%= friend.online ? 'bg-green-500' : 'bg-gray-400' %> border-2 border-white"></span>
-                                    </div>
-                                    <span>
-                                        <%= friend.name %>
-                                    </span>
+
+                    <div id="channelSidebar" class="hidden h-full">
+                        <div id="channelHeader" class="p-3 border-b border-gray-200">
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <h3 id="groupName" class="text-lg font-bold">Group Name</h3>
+                                    <p id="groupDescription" class="text-sm text-gray-500">Group Description</p>
                                 </div>
-                                <% }); %>
-                                    <% } else { %>
-                                        <p class="text-gray-500 text-sm">No Contacts found</p>
-                                        <% } %>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="flex justify-between mt-4">
+                            <!-- Button to add a channel (smaller size) -->
+                            <button id="addChannelButton"
+                                class="bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600">
+                                Add a Channel
+                            </button>
+
+                            <button id="sendInvitationButton"
+                                class="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600">
+                                Send Invitation
+                            </button>
+                        </div>
+
+                        <!-- Modal for adding a channel -->
+                        <div id="addChannelModal"
+                            class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+                            <div class="bg-white p-6 rounded-md w-96">
+                                <h3 class="text-lg font-semibold mb-4">Add a New Channel</h3>
+                                <input type="text" id="channelNameInput" class="w-full p-2 border rounded-md mb-4"
+                                    placeholder="Channel Name">
+                                <div class="flex justify-end space-x-2">
+                                    <button id="cancelChannelButton"
+                                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md">Cancel</button>
+                                    <button id="submitChannelButton"
+                                        class="bg-blue-500 text-white px-4 py-2 rounded-md">Add Channel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="sendInvitationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                            <div class="bg-white p-6 rounded-lg w-96 max-w-sm shadow-lg">
+                                <h3 class="text-2xl font-semibold mb-6 text-center text-gray-800">Send Invitation</h3>
+                                <p class="text-gray-600 text-sm mb-4">Select a friend to send an invitation:</p>
+                                <ul id="friendList" class="space-y-3">
+                                    <% friends.forEach(friend => { %>
+                                        <li class="flex justify-between items-center p-3 bg-gray-100 rounded-lg shadow-sm hover:bg-gray-200 transition ease-in-out">
+                                            <span class="text-gray-700 font-medium"><%= friend.name %></span>
+                                            <button
+                                                class="bg-green-600 text-white px-3 py-2 text-sm rounded-md hover:bg-green-700 transition duration-200"
+                                                onclick="sendInvitation(this)"
+                                            >
+                                                Send Invitation
+                                            </button>
+                                        </li>
+                                    <% }); %>
+                                </ul> 
+                                <div class="flex justify-end space-x-4 mt-6">
+                                    <button id="cancelInvitationButton" class="bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm hover:bg-gray-400 transition" onclick="closeModal()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+
+                        <div id="channelSection" class="p-3">
+                            <!-- Channel data will be populated dynamically -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- Main Content -->
-                <div class="flex-1 ml-[300px] mt-16 h-[calc(100vh-4rem)] flex flex-col overflow-y-auto">
+                <div id="mainContent"
+                    class="flex-1 ml-[300px] mt-16 h-[calc(100vh-4rem)] flex flex-col overflow-y-auto">
                     <div class="w-full bg-white p-6 border-b border-gray-300 flex justify-between items-center">
                         <h2 class="text-2xl font-bold mb-4 text-[#2563eb]">Welcome, <%= user.name %>!</h2>
                         <div class="flex items-center space-x-3">
@@ -509,6 +599,15 @@
             </div>
 
             <script>
+                window.addEventListener('DOMContentLoaded', () => {
+                    updateDashboard(); // Updates the counter as soon as the page loads
+                });
+
+                setInterval(() => {
+                    updateDashboard();
+                }, 60000); // Updates every 60 seconds
+
+                let currentGroupId = null;
                 document.getElementById('search-input').addEventListener('input', async function () {
                     const query = this.value.trim();
                     const dropdown = document.getElementById('search-dropdown');
@@ -524,11 +623,11 @@
                         const users = await response.json();
 
                         dropdown.innerHTML = users.map(user => `
-            <a href="${user.profileUrl}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <img src="${user.avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full mr-3">
-                <span>${user.name} (${user.email})</span>
-            </a>
-        `).join('');
+                            <a href="${user.profileUrl}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                <img src="${user.avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full mr-3">
+                                <span>${user.name} (${user.email})</span>
+                            </a>
+                        `).join('');
 
                         dropdown.style.display = 'block';
                     } catch (error) {
@@ -538,75 +637,148 @@
                     }
                 });
 
-                function toggleFriendRequests() {
-                    const dropdown = document.getElementById('friendRequestsList');
-                    const envelopeIcon = document.querySelector('a[onclick="toggleFriendRequests()"] i');
+                function toggleRequestsDropdown(event) {
+                    event.preventDefault(); // Prevent default link behavior if clicked.
 
-                    // Toggle visibility of dropdown
-                    dropdown.classList.toggle('hidden');
+                    // Ensure correct elements are targeted.
+                    const dropdown = document.getElementById('requestsDropdown');
+                    const envelopeIcon = event.currentTarget.querySelector('i'); // Use the clicked element.
 
-                    // Change the envelope icon to an opened envelope when the dropdown is visible
-                    if (dropdown.classList.contains('hidden')) {
-                        envelopeIcon.classList.remove('fa-envelope-open');
-                        envelopeIcon.classList.add('fa-envelope');
-                    } else {
-                        envelopeIcon.classList.remove('fa-envelope');
-                        envelopeIcon.classList.add('fa-envelope-open');
+                    // Toggle visibility of the dropdown
+                    const isHidden = dropdown.classList.toggle('hidden');
+
+                    // Update the envelope icon
+                    envelopeIcon.classList.toggle('fa-envelope', isHidden);
+                    envelopeIcon.classList.toggle('fa-envelope-open', !isHidden);
+
+                    if (!isHidden) {
+                        // Update the dashboard when the dropdown becomes visible
+                        updateDashboard();
+
+                        // Add a one-time click listener to close the dropdown when clicking outside
+                        const outsideClickListener = (event) => {
+                            const isClickInside = dropdown.contains(event.target) || envelopeIcon.contains(event.target);
+
+                            if (!isClickInside) {
+                                dropdown.classList.add('hidden');
+                                envelopeIcon.classList.add('fa-envelope');
+                                envelopeIcon.classList.remove('fa-envelope-open');
+                                document.removeEventListener('click', outsideClickListener); // Remove the listener
+                            }
+                        };
+
+                        document.addEventListener('click', outsideClickListener);
                     }
                 }
 
-                document.addEventListener('click', function (event) {
-                    const dropdown = document.getElementById('friendRequestsList');
-                    const envelopeIcon = event.target.closest('a[onclick="toggleFriendRequests()"]');
 
+                document.addEventListener('click', function (event) {
+                    const dropdown = document.getElementById('requestsDropdown');
+                    const envelopeIcon = event.target.closest('a[onclick="toggleRequestsDropdown(event)"]');
+
+                    // Close dropdown if click is outside both the dropdown and the envelope icon
                     if (!dropdown.contains(event.target) && !envelopeIcon) {
                         dropdown.classList.add('hidden');
+
+                        // Reset the envelope icon state
+                        const icon = document.querySelector('a[onclick="toggleRequestsDropdown(event)"] i');
+                        if (icon) {
+                            icon.classList.add('fa-envelope');
+                            icon.classList.remove('fa-envelope-open');
+                        }
                     }
                 });
 
                 async function updateDashboard() {
                     try {
-                        // Fetch updated friend requests
-                        const friendRequestsResponse = await fetch("/friend-requests");
-                        const friendRequests = await friendRequestsResponse.json();
+                        // Fetch updated friend requests, group invitations, and join requests
+                        const [friendRequests, groupInvitations, joinRequests] = await Promise.all([
+                            fetch("/friend-requests").then(res => res.json()),
+                            fetch("/group-invitations").then(res => res.json()),
+                            fetch("/join-requests").then(res => res.json()),
+                        ]);
 
-                        // Update the UI with the new data
-                        const friendRequestsList = document.getElementById("friendRequestsList");
-                        friendRequestsList.innerHTML = friendRequests.map(req => `
-            <li class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="${req.avatarUrl}" alt="${req.name}" class="w-8 h-8 rounded-full mr-3">
-                    <span>${req.name}</span>
-                </div>
-                <div class="space-x-2">
-                    <button onclick="handleRequest('${req.email}', 'ACCEPT')" class="bg-green-500 text-white px-2 py-1 rounded-md">Accept</button>
-                    <button onclick="handleRequest('${req.email}', 'REJECT')" class="bg-red-500 text-white px-2 py-1 rounded-md">Reject</button>
-                </div>
-            </li>
-        `).join("");
+                        // Update the dropdown content
+                        const requestsDropdown = document.getElementById("requestsDropdown");
 
-                        // Update request count and visibility
-                        const requestCount = document.getElementById("requestCount");
-                        requestCount.textContent = friendRequests.length;
+                        const friendRequestsHTML = friendRequests.length > 0
+                            ? friendRequests.map(req => `
+                                <li class="flex items-center justify-between p-4 border-b hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <img src="${req.avatarUrl}" alt="${req.name}" class="w-10 h-10 rounded-full mr-4 object-cover">
+                                        <div>
+                                            <span class="font-medium text-gray-800">${req.name}</span>
+                                            <p class="text-xs text-gray-500">Wants to connect</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="handleRequest('${req.email}', 'ACCEPT')"
+                                            class="bg-green-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-green-600">Accept</button>
+                                        <button onclick="handleRequest('${req.email}', 'REJECT')"
+                                            class="bg-red-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-600">Reject</button>
+                                    </div>
+                                </li>
+                            `).join("")
+                            : `<li class="px-4 py-2 text-sm text-gray-500">No pending friend requests</li>`;
 
-                        // Toggle visibility based on the number of requests
-                        if (friendRequests.length > 0) {
-                            requestCount.classList.remove("hidden");
+                        const groupInvitationsHTML = groupInvitations.length > 0
+                            ? groupInvitations.map(invitation => `
+                                <li class="flex items-center justify-between p-4 border-b hover:bg-gray-50 transition-colors">
+                                    <div>
+                                        <span class="font-medium">${invitation.groupName}</span>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="handleInvitation('${invitation.groupId}', 'accept')"
+                                            class="bg-green-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-green-600">Accept</button>
+                                        <button onclick="handleInvitation('${invitation.groupId}', 'reject')"
+                                            class="bg-red-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-600">Reject</button>
+                                    </div>
+                                </li>
+                            `).join("")
+                            : `<li class="px-4 py-2 text-sm text-gray-500">No group invitations</li>`;
+
+                        const groupJoinRequestsHTML = joinRequests.length > 0
+                            ? joinRequests.map(req => `
+                                <li class="flex items-center justify-between p-4 border-b hover:bg-gray-50 transition-colors">
+                                    <div>
+                                        <span class="font-medium">${req.userName}</span>
+                                        <p class="text-xs text-gray-500">Requested to join ${req.groupName}</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="handleGroupRequest('${req.userEmail}', '${req.groupId}', 'accept')"
+                                            class="bg-green-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-green-600">Accept</button>
+                                        <button onclick="handleGroupRequest('${req.userEmail}', '${req.groupId}', 'reject')"
+                                            class="bg-red-500 text-white px-3 py-1.5 rounded-md text-sm hover:bg-red-600">Reject</button>
+                                    </div>
+                                </li>
+                            `).join("")
+                            : `<li class="px-4 py-2 text-sm text-gray-500">No group join requests</li>`;
+
+                        requestsDropdown.innerHTML = `
+                            <li class="sticky top-0 bg-gray-100 font-bold text-lg px-4 py-2 border-b border-gray-300">
+                                Friend Requests
+                            </li>
+                            ${friendRequestsHTML}
+                            <li class="sticky top-0 bg-gray-100 font-bold text-lg px-4 py-2 border-b border-gray-300 mt-2">
+                                Group Invitations
+                            </li>
+                            ${groupInvitationsHTML}
+                            <li class="sticky top-0 bg-gray-100 font-bold text-lg px-4 py-2 border-b border-gray-300 mt-2">
+                                Group Join Requests
+                            </li>
+                            ${groupJoinRequestsHTML}
+                        `;
+
+                        // Update the notification badge
+                        const totalInvites = friendRequests.length + groupInvitations.length + joinRequests.length;
+                        const notificationBadge = document.getElementById("notificationBadge");
+
+                        if (totalInvites > 0) {
+                            notificationBadge.textContent = totalInvites;
+                            notificationBadge.classList.remove("hidden");
                         } else {
-                            requestCount.classList.add("hidden");
+                            notificationBadge.classList.add("hidden");
                         }
-
-                        // Toggle the envelope icon if the dropdown is visible
-                        const dropdown = document.getElementById('friendRequestsList');
-                        const envelopeIcon = document.querySelector('a[onclick="toggleFriendRequests()"] i');
-                        if (!dropdown.classList.contains('hidden')) {
-                            envelopeIcon.classList.remove('fa-envelope');
-                            envelopeIcon.classList.add('fa-envelope-open');
-                        } else {
-                            envelopeIcon.classList.remove('fa-envelope-open');
-                            envelopeIcon.classList.add('fa-envelope');
-                        }
-
                     } catch (error) {
                         console.error("Error updating dashboard:", error);
                     }
@@ -625,6 +797,7 @@
                         if (result.success) {
                             alert(`Request ${action.toLowerCase()}ed successfully!`);
                             updateDashboard(); // Ensure this function is defined
+                            window.location.reload();
                         } else {
                             alert(`Error: ${result.message}`);
                         }
@@ -638,10 +811,10 @@
                 async function loadDirectMessages(friendEmail) {
                     const mainContent = document.querySelector('.flex-1');
                     mainContent.innerHTML = `
-        <div class="flex justify-center items-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-        </div>
-    `; // Loading spinner
+                        <div class="flex justify-center items-center h-full">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                        </div>
+                    `; // Loading spinner
 
                     try {
                         // Fetch initial messages and render the chat
@@ -675,17 +848,18 @@
 
                     // Optimistically add the message to the chat UI
                     const newMessageHTML = `
-        <div class="flex items-start space-x-3 mb-4">
-            <img src="<%= user.avatarUrl %>" alt="<%= user.name %>" class="w-10 h-10 rounded-full">
-            <div>
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-blue-600"><%= user.name %></span>
-                    <span class="text-xs text-gray-500">${timestamp.toLocaleTimeString()}</span>
-                </div>
-                <div class="bg-white rounded-lg p-3 shadow-sm">${message}</div>
-            </div>
-        </div>
-    `;
+                        <div class="flex items-start space-x-3 mb-4">
+                            <img src="<%= user.avatarUrl %>" alt="<%= user.name %>" class="w-10 h-10 rounded-full">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-semibold text-blue-600"><%= user.name %></span>
+                                    <span class="text-xs text-gray-500">${timestamp.toLocaleTimeString()}</span>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">${message}</div>
+                            </div>
+                        </div>
+                    `;
+
                     chatBox.insertAdjacentHTML('beforeend', newMessageHTML); // Append message properly
 
                     // Scroll to the bottom
@@ -773,21 +947,300 @@
                     window.dispatchEvent(customEvent);
                 });
 
-                // Emit a 'typing' event when the user starts typing
-                document.getElementById('messageInput').addEventListener('input', () => {
-                    socket.emit('typing', { recipient: friendEmail });
+                async function joinGroup(groupId) {
+                    try {
+                        const response = await fetch(`/group/${groupId}/join`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+
+                        if (response.ok) {
+                            alert('Successfully joined the group!');
+                            location.reload();
+                        } else {
+                            alert('Failed to join the group. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error joining group:', error);
+                        alert('An error occurred. Please try again later.');
+                    }
+                }
+
+                async function handleGroupRequest(userEmail, groupId, action) {
+                    try {
+                        const response = await fetch(`/group/${groupId}/handle-request`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ collaboratorEmail: userEmail, action })
+                        });
+
+                        if (response.ok) {
+                            alert(`Request ${action}ed successfully!`);
+                            window.location.reload();
+                        } else {
+                            alert('Failed to handle the request. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error handling group request:', error);
+                        alert('An error occurred. Please try again later.');
+                    }
+                }
+
+                async function loadGroup(groupId) {
+                    const friendSidebar = document.getElementById('friendSidebar');
+                    const channelSidebar = document.getElementById('channelSidebar');
+
+                    friendSidebar.classList.add('hidden');
+                    channelSidebar.classList.remove('hidden');
+
+                    const mainContent = document.getElementById('mainContent');
+                    const groupNameElement = document.getElementById('groupName');
+                    const groupDescriptionElement = document.getElementById('groupDescription');
+                    const channelSection = document.getElementById('channelSection');
+
+                    // Highlight the selected group
+                    document.querySelectorAll('.group-item').forEach(group => group.classList.remove('selected'));
+                    document.querySelector(`[data-group-id="${groupId}"]`).classList.add('selected');
+
+                    mainContent.innerHTML = `
+                        <div class="flex justify-center items-center h-full">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                        </div>
+                    `;
+
+                    try {
+                        const metadataResponse = await fetch(`/group/${groupId}/metadata`);
+                        if (!metadataResponse.ok) throw new Error('Failed to fetch group metadata');
+                        const group = await metadataResponse.json();
+
+                        groupNameElement.innerText = group.name || "Unnamed Group";
+                        groupDescriptionElement.innerText = group.description || "No description available";
+
+                        const groupResponse = await fetch(`/group/${groupId}/view`);
+                        if (!groupResponse.ok) throw new Error('Failed to load group view');
+                        mainContent.innerHTML = await groupResponse.text();
+
+                        const channelsResponse = await fetch(`/group/${groupId}/channels`);
+                        const { channels } = await channelsResponse.json();
+                        channelSection.innerHTML = channels.length
+                            ? channels.map(channel => `
+                            <div onclick="loadChannelMessages('${channel.id}', '${channel.name}')"
+                                class="cursor-pointer p-2 hover:bg-gray-200 rounded-md">
+                                # ${channel.name}
+                            </div>
+                        `).join("")
+                            : "<p class='text-sm text-gray-500'>No channels available for this group.</p>";
+
+                        // Update the global groupId variable
+                        currentGroupId = groupId;
+                    } catch (error) {
+                        console.error('Error loading group:', error);
+                        mainContent.innerHTML = `
+                            <p class="text-center text-gray-500">Failed to load group. Please try again later.</p>
+                        `;
+                    }
+                }
+
+                async function loadChannelMessages(channelId, channelName) {
+                    currentChannelId = channelId;
+
+                    const chatBox = document.getElementById("groupChatBox");
+                    document.getElementById("groupHeader").innerText = `# ${channelName}`; // Update header title
+
+                    chatBox.innerHTML = `
+                        <div class="flex justify-center items-center h-full">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                        </div>
+                    `;
+
+                    try {
+                        const response = await fetch(`/channel/${channelId}/messages`);
+                        const { messages } = await response.json();
+
+                        chatBox.innerHTML = messages.map(message => `
+                            <div class="flex items-start space-x-3 mb-4">
+                                <img src="${message.senderAvatar}" alt="Avatar" class="w-10 h-10 rounded-full">
+                                <div>
+                                    <div class="font-semibold text-blue-600">${message.sender}</div>
+                                    <div class="text-gray-700">${message.content}</div>
+                                    <div class="text-xs text-gray-400">${new Date(message.timestamp).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        `).join("");
+                    } catch (error) {
+                        console.error("Error loading channel messages:", error);
+                        chatBox.innerHTML = `<p class="text-center text-gray-500">Failed to load messages. Please try again later.</p>`;
+                    }
+                }
+
+                async function sendGroupMessage(event, channelId) {
+                    event.preventDefault(); // Prevent page reload
+                    const messageInput = document.getElementById('messageInput');
+                    const message = messageInput.value.trim();
+
+                    if (!message) return;
+
+                    const chatBox = document.getElementById('groupChatBox'); // The chat container
+                    const timestamp = new Date();
+
+                    // Optimistically add the message to the chat UI
+                    const newMessageHTML = `
+                        <div class="flex items-start space-x-3 mb-4">
+                            <img src="<%= user.avatarUrl %>" alt="<%= user.name %>" class="w-10 h-10 rounded-full">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-semibold text-blue-600"><%= user.name %></span>
+                                    <span class="text-xs text-gray-500">${timestamp.toLocaleTimeString()}</span>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">${message}</div>
+                            </div>
+                        </div>
+                    `;
+                    chatBox.insertAdjacentHTML('beforeend', newMessageHTML); // Add the new message
+
+                    // Scroll to the bottom of the chat box
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    // Clear the message input field
+                    messageInput.value = '';
+
+                    // Send the message to the server
+                    try {
+                        const response = await fetch('/send-group-message', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ channelId, message })  // Send the channelId and message to the server
+                        });
+
+                        if (!response.ok) {
+                            console.error('Error sending group message:', await response.text());
+                            alert('Failed to send the message. Please try again.');
+
+                            // Optionally remove the optimistic message if the server fails
+                            chatBox.lastElementChild.remove();
+                        }
+                    } catch (error) {
+                        console.error('Error sending group message:', error);
+                        alert('An error occurred. Please try again later.');
+
+                        // Optionally remove the optimistic message if an error occurs
+                        chatBox.lastElementChild.remove();
+                    }
+                }
+
+                // Show Add Channel Modal
+                document.getElementById('addChannelButton').addEventListener('click', (event) => {
+                    event.preventDefault(); // Prevent any default behavior
+                    document.getElementById('addChannelModal').classList.remove('hidden'); // Show the modal
                 });
 
-                // Listen for 'typing' events
-                socket.on('user-typing', (data) => {
-                    const typingIndicator = document.getElementById('typingIndicator');
-                    if (data.sender === friendEmail) {
-                        typingIndicator.innerText = `${data.senderName} is typing...`;
-                        typingIndicator.style.display = 'block';
-                        setTimeout(() => typingIndicator.style.display = 'none', 3000);
+                // Cancel Add Channel Modal
+                document.getElementById('cancelChannelButton').addEventListener('click', () => {
+                    document.getElementById('addChannelModal').classList.add('hidden'); // Hide the modal
+                });
+
+                // Submit Add Channel Form
+                document.getElementById('submitChannelButton').addEventListener('click', async (event) => {
+                    event.preventDefault(); // Prevent default form submission
+
+                    const channelNameInput = document.getElementById('channelNameInput');
+                    const channelName = channelNameInput.value.trim();
+
+                    if (!channelName) {
+                        alert('Channel name cannot be empty.');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/group/${currentGroupId}/add-channel`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ channelName }),
+                        });
+
+                        const result = await response.json(); // Parse JSON response
+
+                        if (response.ok) {
+                            // Close the modal
+                            document.getElementById('addChannelModal').classList.add('hidden');
+
+                            // Clear the input field
+                            document.getElementById('channelNameInput').value = '';
+
+                            // Use loadGroup() to refresh the group content
+                            loadGroup(currentGroupId);
+                        } else {
+                            alert('Failed to add channel. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error adding channel:', error);
+                        alert('An error occurred. Please try again.');
                     }
                 });
 
+                // Send invitation function
+                async function sendInvitation(button) {
+                    const friendEmail = button.parentElement.dataset.email; // Get email from data attribute
+                    const friendName = button.parentElement.dataset.name; // Get name from data attribute
+
+                    if (!friendEmail) {
+                        alert('Invalid friend selected.');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/group/${currentGroupId}/send-invitation`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ targetEmail: friendEmail }),
+                        });
+
+                        if (response.ok) {
+                            alert(`Invitation sent successfully to ${friendName}!`);
+                        } else {
+                            const error = await response.text();
+                            alert(`Failed to send invitation: ${error}`);
+                        }
+                    } catch (error) {
+                        console.error('Error sending invitation:', error);
+                        alert('An unexpected error occurred.');
+                    }
+                }
+
+                document.getElementById('sendInvitationButton').addEventListener('click', () => {
+                    if (!currentGroupId) {
+                        alert('No group selected.');
+                        return;
+                    }
+
+                    // Show the modal
+                    document.getElementById('sendInvitationModal').classList.remove('hidden');
+                });
+
+                // Cancel button to hide the modal
+                document.getElementById('cancelInvitationButton').addEventListener('click', () => {
+                    document.getElementById('sendInvitationModal').classList.add('hidden');
+                });
+
+                async function handleInvitation(groupId, action) {
+                    try {
+                        const response = await fetch(`/group/${groupId}/handle-request`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action }),
+                        });
+
+                        if (response.ok) {
+                            alert(`Invitation ${action}ed successfully.`);
+                            updateDashboard(); // Refresh the dashboard
+                            window.location.reload();
+                        } else {
+                            alert('Failed to handle the invitation.');
+                        }
+                    } catch (error) {
+                        console.error('Error handling invitation:', error);
+                    }
+                }
             </script>
 </body>
 
