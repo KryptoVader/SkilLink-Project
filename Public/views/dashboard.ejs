@@ -345,7 +345,7 @@
                                 <p class="text-gray-600 text-sm mb-4">Select a friend to send an invitation:</p>
                                 <ul id="friendList" class="space-y-3">
                                     <% friends.forEach(friend => { %>
-                                        <li class="flex justify-between items-center p-3 bg-gray-100 rounded-lg shadow-sm hover:bg-gray-200 transition ease-in-out">
+                                        <li class="flex justify-between items-center p-3 bg-gray-100 rounded-lg shadow-sm hover:bg-gray-200 transition ease-in-out" data-email="<%= friend.email %>">
                                             <span class="text-gray-700 font-medium"><%= friend.name %></span>
                                             <button
                                                 class="bg-green-600 text-white px-3 py-2 text-sm rounded-md hover:bg-green-700 transition duration-200"
@@ -353,7 +353,7 @@
                                             >
                                                 Send Invitation
                                             </button>
-                                        </li>
+                                        </li>                                        
                                     <% }); %>
                                 </ul> 
                                 <div class="flex justify-end space-x-4 mt-6">
@@ -1170,7 +1170,8 @@
                             // Use loadGroup() to refresh the group content
                             loadGroup(currentGroupId);
                         } else {
-                            alert('Failed to add channel. Please try again.');
+                            const errorMessage = await response.text();
+                            alert(errorMessage || 'Failed to add channel.');
                         }
                     } catch (error) {
                         console.error('Error adding channel:', error);

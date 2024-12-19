@@ -1502,7 +1502,7 @@ app.post('/group/:id/add-channel', async (req, res) => {
         );
 
         if (ownerResult.records.length === 0) {
-            return res.status(403).send('You are not authorized to add channels to this group.');
+            return res.status(403).json('You are not authorized to add channels to this group.');
         }
 
         // Step 2: Create a new channel node and link it to the group
