@@ -232,18 +232,18 @@ app.post("/add-user", async (req, res) => {
     const session = driver.session();
 
     try {
+        // Check if user already exists
         const existingUserQuery = `MATCH (u:User {email: $email}) RETURN u`;
-        const existingUserResult = await session.run(existingUserQuery, {
-            email,
-        });
+        const existingUserResult = await session.run(existingUserQuery, { email });
 
         if (existingUserResult.records.length > 0) {
             return res.status(400).send("User already exists with this email");
         }
 
+        // Create the new user
         const createUserQuery = `
             MERGE (u:User {email: $email, name: $name, password: $password})
-            SET u.avatarUrl = $defaultAvatar, u.BannerUrl = null
+            SET u.avatarUrl = $defaultAvatar, u.bannerUrl = null
             RETURN u
         `;
         const createUserResult = await session.run(createUserQuery, {
@@ -255,6 +255,7 @@ app.post("/add-user", async (req, res) => {
 
         const createdUser = createUserResult.records[0].get("u").properties;
 
+        // Update session with the new user's details
         req.session.user = {
             email: createdUser.email,
             name: createdUser.name,
@@ -528,40 +529,39 @@ app.get("/project", async (req, res) => {
 
 app.get("/search", async (req, res) => {
     const query = req.query.query?.toLowerCase();
-    const currentUserEmail = req.user?.email;
 
     if (!query) {
         return res.status(400).send("Query parameter is required");
+    }
+
+    const currentUserEmail = req.session.user?.email;
+
+    if (!currentUserEmail) {
+        return res.status(401).send("Unauthorized: Please log in.");
     }
 
     const session = driver.session();
     try {
         const searchQuery = `
             MATCH (u:User)
-            WHERE (toLower(u.name) CONTAINS $query)
+            WHERE toLower(u.name) CONTAINS $query
                   AND u.email <> $currentUserEmail
             RETURN DISTINCT u LIMIT 10
         `;
 
-        const result = await session.run(searchQuery, {
-            query,
-            currentUserEmail,
-        });
-        const users = result.records.map((record) => {
-            const user = record.get("u").properties;
+        const result = await session.run(searchQuery, { query, currentUserEmail });
 
-            return {
-                name: user.name,
-                email: user.email,
-                avatarUrl: user.avatarUrl || "/images/download.png",
-                profileUrl: `/profile/${encodeURIComponent(user.email)}`, // Use email as unique identifier
-            };
-        });
+        const user = result.records.map(record => ({
+            name: record.get("u").properties.name,
+            email: record.get("u").properties.email,
+            avatarUrl: record.get("u").properties.avatarUrl || "/images/download.png",
+            profileUrl: `/profile/${encodeURIComponent(record.get("u").properties.email)}`,
+        }));
 
-        res.json(users);
+        res.json(user);
     } catch (error) {
         console.error("Error during search:", error);
-        res.status(500).send("An error occurred during search");
+        res.status(500).send("An error occurred during search.");
     } finally {
         await session.close();
     }
